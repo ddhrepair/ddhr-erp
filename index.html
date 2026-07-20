@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+
+    <!--- Include the manifest and styles sheet --->
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Google Sign-In library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!--- Declare the icons for the webpage --->
+    <link rel="icon" href="images/DDHR_Logo.svg" />
+    <link rel="apple-touch-icon" href="images/full.png">
+    <link rel="mask-icon" href="images/masked.png" color="#000000">
+
+    <title>DDHR</title>
+</head>
+
+<body>
+
+    <!-- Login area -->
+    <div id="loginContainer">
+
+        <img src="images/DDHR_Logo.svg">
+
+        <div>
+
+            <div class="hidden">
+
+                <h2>Sign In</h2>
+
+                <div id="googleLoginButton"></div>
+
+            </div>
+
+            <div class="hidden">
+
+                <h2>Signing In...</h2>
+
+                <img src="images/loading.gif">
+
+            </div>
+
+            <div class="hidden">
+
+                <h2>Loading...</h2>
+
+                <img src="images/loading.gif">
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div id="menuBar">
+        <img src="images/DDHR_Logo.svg">
+        <div class="button">Add New Customer</div>
+        <div class="button">Modify Customer Info</div>
+        <div class="button">Find Documents</div>
+        <div class="button">Create Work Order</div>
+        <div class="button">Manage Inventory</div>
+        <div class="button">Create Statements</div>
+        <div class="button">Statistics</div>
+        <div id="logoutBtn" class="button">Logout</div>
+    </div>
+
+    <div id="createWorkOrder" class="main">
+        <div>
+            <div>
+                <label for="customerSelect">Select Existing Customer:</label>
+                <input type="text" id="customerSelect" name="customerSelect" placeholder="Customer Name     —     Phone Number" list="customers">
+                <div id="customerSelectErrorText" class="errorText hidden">Error: make sure to select a customer first</div>
+                <datalist id="customers"></datalist>
+                <br>
+                <button id="createWorkOrderBtn" class="button">Create Work Order</button>
+            </div>
+            <div>
+                <button id="pinCustomerBtn" class="button">Pin Customer to Regulars</button>
+            </div>
+        </div>
+        <div>
+            <div>
+                <div>Quick Create for Regulars</div>
+                <img id="editPinnedCustomersBtn" class="button" src="images/general/edit.svg">
+            </div>
+            <div id="pinnedCustomers">
+                <div class="button" id="cashSalesBtn">
+                    <p>CASH SALES</p>
+                    <img src="images/general/add.svg">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="printArea" class="hidden">
+
+        <div class="page">
+
+            <table style="width: 100%; height: 50%;">
+                <tbody>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td style="background: blue;"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
+
+    <script src="script.js" type="module" defer></script>
+
+</body>
+
+</html>

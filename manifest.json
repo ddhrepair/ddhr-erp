@@ -1,0 +1,23 @@
+{
+  "name": "DDHR",
+  "short_name": "DDHR",
+  "description": "Enterprise Resource Planning (ERP) System for Dean's Diesel & Hydraulic Repair.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "images/masked.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/full.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

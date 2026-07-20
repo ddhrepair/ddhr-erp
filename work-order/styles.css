@@ -1,0 +1,108 @@
+#workOrderData {
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    height: 100vh;
+}
+
+#splitLeft {
+    width: 70%;
+    background-color: var(--lightRed);
+    padding: 0.5%;
+}
+
+#splitRight {
+    width: 30%;
+}
+
+#woCustomerInfo {
+    background-color: var(--lightGrey);
+    border-radius: 1vw;
+    display: flex;
+    flex-direction: row;
+    padding: 2%;
+    justify-content: space-between;
+
+    >div {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
+#woInfoContainer {
+    display: flex;
+    flex-direction: column;
+    padding: 1% 0;
+
+    >div {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+
+#notesContainer {
+    width: 40%;
+}
+
+#notes {
+    border: 1px solid #000000;
+    border-radius: 0.1vw;
+    aspect-ratio: 3 / 1;
+}
+
+#totals {
+    border: 1px solid #000000;
+    background-color: #ffffff;
+    border-radius: 0.3vw;
+    max-width: 50%;
+    min-width: 25%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0.5% 1%;
+
+    >div {
+        display: flex;
+        flex-direction: column;
+        /*padding-right: 10%;*/
+    }
+
+    label:last-of-type {
+        font-weight: bold;
+    }
+}
+
+#woParts {
+
+
+    table,
+    th,
+    td {
+        background-color: #ffffff;
+        border: solid 1px #000000;
+        border-collapse: collapse;
+    }
+
+    table {
+        width: 100%;
+        flex: 1;
+    }
+
+    th.small {
+        width: 5%;
+    }
+
+    th.medium {
+        width: 15%;
+    }
+
+    th.big {
+        width: 25%;
+    }
+
+    th.auto {
+        width: auto;
+    }
+}
