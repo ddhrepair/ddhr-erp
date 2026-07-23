@@ -9,6 +9,8 @@
     width: 70%;
     background-color: var(--lightRed);
     padding: 0.5%;
+    display: flex;
+    flex-direction: column;
 }
 
 #splitRight {
@@ -76,6 +78,12 @@
 
 #woParts {
 
+    /*flex: 1;*/
+    overflow: auto;
+    outline: solid 1px #000000;
+    outline-offset: -1px;
+    height: 100%;
+    width: 100%;
 
     table,
     th,
@@ -87,7 +95,12 @@
 
     table {
         width: 100%;
-        flex: 1;
+    }
+
+    th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
     }
 
     th.small {
@@ -105,4 +118,78 @@
     th.auto {
         width: auto;
     }
+
+    th.fit {
+        width: 0.1%;
+        white-space: nowrap;
+    }
+
+    input {
+        color: #000000;
+    }
+
+    input[type="checkbox"] {
+        accent-color: var(--ddhrRed);
+    }
+
+    input[type="number"],
+    input[type="text"] {
+        height: 100%;
+        width: 100%;
+        border: none;
+        outline: none;
+        padding: 0;
+        appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    img {
+        height: 1rem;
+    }
+
+    td:nth-child(1),
+    td:nth-child(2) {
+
+        text-align: center;
+
+        >div {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        >input {
+            text-align: center;
+        }
+    }
+
+    td:nth-child(4),
+    td:nth-child(5) {
+        text-align: right;
+
+        >input {
+            text-align: right;
+        }
+    }
+
+    .empView {
+        display: var(--empViewVisibility, none);
+    }
+
+    .custView {
+        display: var(--custViewVisibility, table-cell);
+    }
+}
+
+#tableContainer {
+    flex: 1;
+    background-color: var(--offWhite);
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
 }
