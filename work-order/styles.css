@@ -1,106 +1,327 @@
-#workOrderData {
+:root {
+    --headerHeight: 50px;
+    --mainGap: 20px;
+}
+
+.price::before {
+    content: "$";
+}
+
+input,
+textarea {
+    border: solid 1px var(--lightGrey);
+}
+
+input:focus,
+textarea:focus {
+    outline: solid 2px var(--ddhrRed);
+    outline-offset: -1px;
+}
+
+.status {
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 5px;
+}
+
+.status.open {
+    color: var(--ddhrRed);
+    background-color: rgb(255 0 0 / 15%);
+    box-shadow: 0 0 8px rgb(255 0 0 / 40%);
+    border: solid 1px var(--ddhrRed);
+}
+
+.status.paid {
+    color: #22aa44;
+    background-color: rgb(0 180 50 / 15%);
+    box-shadow: 0 0 8px rgb(0 180 50 / 40%);
+    border: solid 1px #22aa44;
+}
+
+.status.partialPay {
+    color: #ee8800;
+    background-color: rgb(255 140 0 / 15%);
+    box-shadow: 0 0 8px rgb(255 140 0 / 40%);
+    border: solid 1px #ee8800;
+}
+
+.status.open::before {
+    content: "Open";
+    color: red;
+}
+
+.status.paid::before {
+    content: "Paid";
+    color: green;
+}
+
+.status.partialPay::before {
+    content: "Partial Pay";
+    color: orange;
+}
+
+#workOrderContainer {
+    width: 100%;
+    height: calc(100vh - var(--headerHeight));
+    display: flex;
+    flex-direction: column;
+    gap: var(--mainGap);
+    padding: var(--mainGap);
+    box-sizing: border-box;
+    background-color: var(--offWhite);
+}
+
+#header {
+    width: 100%;
+    height: var(--headerHeight);
+    background-color: var(--darkGrey);
+    color: #ffffff;
     display: flex;
     flex-direction: row;
-    width: 100vw;
-    height: 100vh;
+    justify-content: space-between;
+    padding: 0 var(--mainGap);
+    box-sizing: border-box;
+}
+
+#header>div {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    align-items: center;
+    gap: var(--mainGap);
+}
+
+#headerInfo img {
+    height: 80%;
+}
+
+#headerInfo div:nth-of-type(1) {
+    font-weight: bold;
+}
+
+#headerInfo hr {
+    width: 1px;
+    height: 60%;
+    background-color: var(--ddhrRed);
+    border: none;
+}
+
+
+#splitTop,
+#splitBottom {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    gap: var(--mainGap);
+
+}
+
+#splitBottom {
+    flex: 1;
+    min-height: 0;
+}
+
+#splitLeft,
+#splitRight {
+    min-height: 0;
 }
 
 #splitLeft {
     width: 70%;
-    background-color: var(--lightRed);
-    padding: 0.5%;
     display: flex;
     flex-direction: column;
 }
 
 #splitRight {
     width: 30%;
+    gap: var(--mainGap);
+    display: flex;
+    flex-direction: column;
 }
 
-#woCustomerInfo {
-    background-color: var(--lightGrey);
-    border-radius: 1vw;
+.card {
+    border-radius: 5px;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+.cardHeader {
+    width: 100%;
     display: flex;
     flex-direction: row;
-    padding: 2%;
-    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    padding: 5px 0 0 5px;
 
-    >div {
-        display: flex;
-        flex-direction: column;
+    img {
+        height: 1.5rem;
+        padding-right: 5px;
     }
 }
 
-#woInfoContainer {
+.cardContent {
+    padding: 10px;
+}
+
+.cardFooter {
+    color: #ffffff;
+    background-color: var(--ddhrRed);
+    padding: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-weight: bold;
+}
+
+#splitBottom .cardHeader {
+    background-color: var(--darkGrey);
+    color: #ffffff;
+    align-items: center;
+    padding: 3px 5px;
+}
+
+#splitRight .card {
+    width: 100%;
+}
+
+#customerInfo {
     display: flex;
     flex-direction: column;
-    padding: 1% 0;
+    flex: 1;
 
-    >div {
+    .cardContent {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
     }
 }
 
-
-#notesContainer {
-    width: 40%;
+#workOrderInfo {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
-#notes {
-    border: 1px solid #000000;
-    border-radius: 0.1vw;
-    aspect-ratio: 3 / 1;
+#additionalCharges .cardContent {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: small;
 }
 
-#totals {
-    border: 1px solid #000000;
-    background-color: #ffffff;
-    border-radius: 0.3vw;
-    max-width: 50%;
-    min-width: 25%;
+#additionalCharges label {
+    padding-right: 50px;
+}
+
+#additionalCharges .cardContent>div {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    padding: 0.5% 1%;
+}
+
+#additionalCharges input {
+    width: 50px;
+    appearance: textfield;
+    border-radius: 5px;
+}
+
+#additionalCharges input[type="number"]::-webkit-outer-spin-button,
+#additionalCharges input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#notes {
+    border: 1px solid var(--lightGrey);
+    border-radius: 5px;
+    width: 100%;
+    resize: none;
+    box-sizing: border-box;
+}
+
+#totals .cardContent {
+
+    font-size: small;
 
     >div {
         display: flex;
-        flex-direction: column;
-        /*padding-right: 10%;*/
+        flex-direction: row;
+        justify-content: space-between;
+
+        >div {
+            display: flex;
+            flex-direction: column;
+        }
     }
 
-    label:last-of-type {
-        font-weight: bold;
+    hr {
+        border: none;
+        height: 1px;
+        background-color: var(--lightGrey);
     }
 }
 
-#woParts {
+#tableVisibilityBtn {
+    margin-left: auto;
+    margin-right: 0.25%;
+    height: 20px;
+}
 
-    /*flex: 1;*/
+#tableContainerBackground {
+    background-color: var(--offWhite);
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+}
+
+#tableContainer {
+
+    flex: 1;
     overflow: auto;
     outline: solid 1px #000000;
     outline-offset: -1px;
-    height: 100%;
+    min-height: 0;
     width: 100%;
+    border-radius: 5px;
 
-    table,
+    tbody,
     th,
     td {
         background-color: #ffffff;
-        border: solid 1px #000000;
-        border-collapse: collapse;
+        border: solid 0.5px #000000;
     }
 
     table {
         width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 5px;
     }
+
 
     th {
         position: sticky;
         top: 0;
-        z-index: 1;
+        background-color: var(--ddhrRed);
+        color: #ffffff;
+        border-top: solid 1px #000000;
+        border-bottom: solid 2px #000000;
+    }
+
+    thead,
+    thead th:nth-of-type(1) {
+        border-top-left-radius: 5px;
+        border-left: solid 1px #000000;
+    }
+
+    thead,
+    thead th:last-of-type {
+        border-top-right-radius: 5px;
+        border-right: solid 1px #000000;
     }
 
     th.small {
@@ -124,8 +345,18 @@
         white-space: nowrap;
     }
 
+    tbody>tr:nth-of-type(1)>td {
+        border-top: none;
+    }
+
+    tbody>tr:last-of-type>td {
+        border-bottom: solid 1px #000000;
+    }
+
+    /* make even the disabled inputs look normal */
     input {
         color: #000000;
+        background-color: inherit;
     }
 
     input[type="checkbox"] {
@@ -169,7 +400,9 @@
     }
 
     td:nth-child(4),
-    td:nth-child(5) {
+    td:nth-child(5),
+    td:nth-child(6),
+    td:nth-child(7) {
         text-align: right;
 
         >input {
@@ -184,12 +417,21 @@
     .custView {
         display: var(--custViewVisibility, table-cell);
     }
-}
 
-#tableContainer {
-    flex: 1;
-    background-color: var(--offWhite);
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
+    tfoot,
+    tfoot td {
+        border-top: none;
+        border-bottom: solid 1px #000000;
+    }
+
+    tfoot td:first-of-type {
+        border-radius: 0 0 5px 5px;
+        border-left: solid 1px #000000;
+        box-shadow: 0.5px 0 0 #000;
+    }
+
+    tfoot td:last-of-type {
+        background-color: transparent;
+        border: none;
+    }
 }

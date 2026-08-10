@@ -126,6 +126,16 @@ async function handleGoogleLogin(response) {
             "loginContainer"
         ).classList.add('hidden');
 
+        // add customer info to the customers dropdown
+        const customersPromise = getAllCustomers();
+        const pinnedPromise = getPinnedCustomers();
+
+        customersDict = await customersPromise;
+        addCustomersToDropdown(customersDict);
+
+        pinnedCustomers = await pinnedPromise;
+        addCustomersToPinned(pinnedCustomers, customersDict);
+
 
     }
     catch (err) {
@@ -415,15 +425,20 @@ async function main() {
         document.querySelector("#loginContainer > div > div:nth-of-type(2)").classList.remove('hidden');
         document.querySelector("#loginContainer > div > div:nth-of-type(3)").classList.add('hidden');
 
-        const result = await api(
-            "validateSession"
-        );
+        const customersPromise = getAllCustomers();
+        const pinnedPromise = getPinnedCustomers();
+        const result = await api("validateSession");
 
         if (result.success) {
 
-            document.getElementById(
-                "loginContainer"
-            ).classList.add('hidden');
+            document.getElementById("loginContainer").classList.add('hidden');
+
+            // add customer info to the customers dropdown
+            customersDict = await customersPromise;
+            addCustomersToDropdown(customersDict);
+
+            pinnedCustomers = await pinnedPromise;
+            addCustomersToPinned(pinnedCustomers, customersDict);
 
         } else {
             localStorage.removeItem("sessionId");
@@ -462,13 +477,6 @@ async function main() {
 
     // add event listeners to all of the buttons and stuff
     addEventListeners();
-
-    // add customer info to the customers dropdown
-    customersDict = await getAllCustomers();
-    addCustomersToDropdown(customersDict);
-
-    pinnedCustomers = await getPinnedCustomers();
-    addCustomersToPinned(pinnedCustomers, customersDict);
 
 }
 

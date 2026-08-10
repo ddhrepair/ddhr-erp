@@ -1,6 +1,9 @@
 import { api } from '../script.js';
 
-const partsList = [['1', 'Desc 1', 11.11], ['2', 'Desc 2', 22.22], ['3', 'Desc 3', 33.33]];
+//const partsList = [['1', 'Desc 1', 11.11], ['2', 'Desc 2', 22.22], ['3', 'Desc 3', 33.33]];
+let partsList;
+let customerInfo;
+const tax = 0.06875;
 
 async function createWorkOrder(id) {
 
@@ -69,6 +72,7 @@ function displayWorkOrderData(data) {
     loadingPage.classList.add('hidden');
 
     const cInfo = data.customerInfo;
+    customerInfo = cInfo;
     const otherCustomerInfo = document.getElementById('otherCustomerInfo');
     for (let key in cInfo) {
         if (key.startsWith("CC ")) {
@@ -96,14 +100,19 @@ function displayWorkOrderData(data) {
         element.innerText = key + ": " + value;
     }
 
+    // also update the header
+    const headerDiv = document.getElementById('headerInfo');
+    //headerDiv.querySelector('div:nth-of-type(1)').innerText = woInfo.fileType;
+    headerDiv.querySelector('div:nth-of-type(2)').innerText = "#" + woInfo.PO;
+    headerDiv.querySelector('div:nth-of-type(3)').innerText = woInfo.Status;
+
 }
 
 function addRowToTable() {
     // adds a new dynamic row to the parts table
 
-    const table = document.querySelector("#woParts > table")
+    const table = document.querySelector("#tableContainer > table")
     const tbody = table.querySelector("tbody");
-    const lastRow = tbody.lastElementChild;
 
     const newRow = document.createElement('tr');
     newRow.innerHTML = `<td><input type="number" step="0.01"></td>
@@ -112,7 +121,7 @@ function addRowToTable() {
                         <td class="empView"><input type="number" step="0.01"></td>
                         <td><input type="number" step="0.01"></td>
                         <td class="custView"><input type="number" step="0.01" disabled></td>
-                        <td class="empView"><input type="number" step="0.01"></td>
+                        <td class="empView"><input type="number" step="0.01" disabled></td>
                         <td><input type="checkbox"></td>`;
 
     // add 'change' event listeners to the table row
@@ -121,18 +130,28 @@ function addRowToTable() {
         let column = inputs[i];
         console.log(column);
         column.addEventListener('change', e => recalculateRow(e));
+        column.addEventListener('keydown', e => moveCellOnKeydown(e));
 
         // also add the setValue() method to each cell
         column.setValue = function (newValue) {
+            // only dispatch event when the value truly changes
             if (this.value !== String(newValue)) {
                 this.value = newValue;
                 // dispatch a new 'change' event
                 this.dispatchEvent(new Event("change", { bubbles: true }));
             }
+
+            // if the input if the pp checkbox, update the checked value no matter what
+            if (this.type == "checkbox") {
+                this.checked = newValue;
+                this.dispatchEvent(new Event("change", { bubbles: true }));
+            }
         };
     }
 
-    tbody.insertBefore(newRow, lastRow);
+    tbody.appendChild(newRow);
+    inputs[0].focus();
+    document.querySelector("#addRowBtn").scrollIntoView();
 }
 
 function recalculateRow(e) {
@@ -151,6 +170,11 @@ function recalculateRow(e) {
         let unitTotal = Number(quantity * unitPrice).toFixed(2);
         let unitTotalCell = getNamedColumn(parentRow, 'unitTotal');
         unitTotalCell.setValue(unitTotal);
+
+        // update tax cell by causing click event on PP cell
+        let ppCell = getNamedColumn(parentRow, 'pp');
+        ppCell.setValue(ppCell.checked);
+
     }
 
     // if the target cell is the unitTotal cell
@@ -164,17 +188,20 @@ function recalculateRow(e) {
         console.log("partNum: " + partNum);
 
         // lookup the part number
-        let num, desc, price;
-        const part = partsList.find(row => row[0] === partNum);
+        let num, desc, price, bought;
+        console.log(partsList);
+        const part = partsList.find(row => row['partNumber'] === partNum);
         if (!part) {
             console.log("Undefined part number: " + partNum);
             num = partNum;
             desc = "";
             price = 0;
+            bought = 0;
         } else {
-            num = part[0];
-            desc = part[1];
-            price = part[2];
+            num = part['partNumber'];
+            desc = part['description'];
+            price = part['level1'];
+            bought = part['ourPrice'];
         }
 
         let partNumCell = getNamedColumn(parentRow, 'partNum');
@@ -185,13 +212,53 @@ function recalculateRow(e) {
 
         let unitPriceCell = getNamedColumn(parentRow, 'unitPrice');
         unitPriceCell.setValue(Number(price).toFixed(2));
+
+        let boughtCell = getNamedColumn(parentRow, 'bought');
+        boughtCell.setValue(Number(bought).toFixed(2));
+
+        // update tax cell by causing click event on PP cell
+        let ppCell = getNamedColumn(parentRow, 'pp');
+        ppCell.setValue(ppCell.checked);
     }
 
-    // if teh target cell is the pp cell
+    // if the target cell is the pp cell
     if (e.target == getNamedColumn(parentRow, 'pp')) {
         const ppCell = getNamedColumn(parentRow, 'pp');
-        console.log("pp cell value: " + ppCell.value)
+        const sold = getNamedColumn(parentRow, 'unitPrice').value;
+        const bought = getNamedColumn(parentRow, 'bought').value;
+        const quantity = getNamedColumn(parentRow, 'quantity').value;
+        const taxCell = getNamedColumn(parentRow, 'tax');
+
+        let taxRate = tax;
+        if (customerInfo['Tax Exempt'] == true) {
+            taxRate = 0;
+        }
+
+        let calculatedTax;
+        if (ppCell.checked == true) {
+
+            calculatedTax = ((sold - bought) * tax) * quantity;
+
+        } else {
+
+            calculatedTax = (sold * tax) * quantity;
+
+        }
+
+        taxCell.setValue(Number(calculatedTax).toFixed(2));
     }
+
+    if (e.target == getNamedColumn(parentRow, 'bought')) {
+        // format the value
+        const boughtCell = getNamedColumn(parentRow, 'bought');
+        boughtCell.value = Number(boughtCell.value).toFixed(2);
+        // update tax cell by causing click event on PP cell
+        const ppCell = getNamedColumn(parentRow, 'pp');
+        ppCell.setValue(ppCell.checked);
+    }
+
+    // recalculate the totals
+    calculateTotals();
 }
 
 function getNamedColumn(row, name) {
@@ -212,6 +279,105 @@ function getNamedColumn(row, name) {
     return cell;
 }
 
+function moveCellOnKeydown(e) {
+    // fires when a key is pressed when in the input fields of the table
+    console.log(e);
+
+    if ((e.key == "Enter" && e.shiftKey == false) || e.key == "ArrowDown") {
+        e.preventDefault();
+        // go to the next row
+        const parent = e.target.parentNode.parentNode;
+        const index = Array.from(parent.children).indexOf(e.target.parentNode);
+
+        let nextRow = parent.nextElementSibling;
+        // if the next row is the row with the add button
+        if (nextRow == null) {
+            addRowToTable();
+            // reassign next row to the newly created row
+            nextRow = parent.nextElementSibling;
+        }
+
+        // get the child of the next row at the proper index
+        const nextCell = nextRow.children[index].children[0];
+        nextCell.focus();
+
+        return;
+    }
+
+    if (e.key == "Tab" || e.key == "ArrowRight") {
+        e.preventDefault();
+        // go to the next column
+        const parent = e.target.parentNode.parentNode;
+        const index = Array.from(parent.children).indexOf(e.target.parentNode);
+        let nextIndex = index + 1;
+        while (nextIndex < parent.children.length) {
+            const nextChild = parent.children[nextIndex];
+            const style = getComputedStyle(nextChild);
+            if (style.display == "none" || nextChild.children[0].disabled) {
+                nextIndex += 1;
+            } else {
+                nextChild.children[0].focus();
+                return;
+            }
+        }
+        addRowToTable();
+
+        return;
+    }
+
+    if (e.key == "ArrowUp") {
+        e.preventDefault();
+        // go to the previous row
+        const parent = e.target.parentNode.parentNode;
+        const index = Array.from(parent.children).indexOf(e.target.parentNode);
+
+        let prevRow = parent.previousElementSibling;
+        // if the previous row is the header, do nothing
+        if (prevRow == null) {
+            return;
+        }
+
+        // get the child of the previous row at the proper index
+        const prevCell = prevRow.children[index].children[0];
+        prevCell.focus();
+
+        return;
+    }
+
+    if (e.key == "ArrowLeft") {
+        e.preventDefault();
+        // go to the next column
+        const parent = e.target.parentNode.parentNode;
+        const index = Array.from(parent.children).indexOf(e.target.parentNode);
+        let prevIndex = index - 1;
+        while (prevIndex >= 0) {
+            const prevChild = parent.children[prevIndex];
+            const style = getComputedStyle(prevChild);
+            if (style.display == "none" || prevChild.children[0].disabled) {
+                prevIndex -= 1;
+            } else {
+                prevChild.children[0].focus();
+                return;
+            }
+        }
+
+        // go to the previous row's last column
+        let prevRow = parent.previousElementSibling;
+        // if the previous row is the header, do nothing
+        if (prevRow == null) {
+            return;
+        }
+
+        // get the child of the previous row at the proper index
+        const lastIndex = prevRow.children.length - 1;
+        const prevCell = prevRow.children[lastIndex].children[0];
+        prevCell.focus();
+
+        return;
+    }
+
+}
+
 function toggleTableView() {
     const empStyle = getComputedStyle(document.documentElement).getPropertyValue("--empViewVisibility");
     console.log(empStyle);
@@ -221,19 +387,118 @@ function toggleTableView() {
         document.documentElement.style.setProperty("--custViewVisibility", "none");
         // change 'unit price' to 'sold'
         document.getElementById('up-sold').innerText = "Sold";
+        // change visibility icon
+        document.getElementById('tableVisibilityBtn').setAttribute('src', '../images/general/visibility.svg');
     } else {
         /// show customer columns
         document.documentElement.style.setProperty("--empViewVisibility", "none");
         document.documentElement.style.setProperty("--custViewVisibility", "table-cell");
         // change 'sold' to 'unit price'
         document.getElementById('up-sold').innerText = "Unit Price";
+        // change visibility icon
+        document.getElementById('tableVisibilityBtn').setAttribute('src', '../images/general/visibility_off.svg');
     }
+}
+
+function calculateTotals() {
+    // calculate the parts subtotal, tax, and additional charges
+
+    let partsSubtotal, totalTax, totalAdditionalCharges, overallTotal;
+    partsSubtotal = totalTax = totalAdditionalCharges = overallTotal = 0;
+
+    // calculate the parts and tax totals
+    const rows = document.querySelectorAll("#tableContainer > table > tbody > tr");
+    for (const row of rows) {
+        const unitTotal = Number(row.querySelector("td:nth-of-type(6) > input").value);
+        const tax = Number(row.querySelector("td:nth-of-type(7) > input").value);
+
+        partsSubtotal += unitTotal;
+        totalTax += tax;
+    }
+
+    // calculate the additional charges
+    const additionalChargesElements = document.querySelectorAll('#additionalCharges input:not(#laborHours, #laborRate)');
+    for (const element of additionalChargesElements) {
+        totalAdditionalCharges += Number(element.value);
+    }
+
+    // calculate the overall total and set the results on the page
+    overallTotal = partsSubtotal + totalTax + totalAdditionalCharges;
+
+    const subtotalElement = document.getElementById('subTotal');
+    const taxElement = document.getElementById('tax');
+    const additionalChargesElement = document.getElementById('additionalChargesTotal');
+    const totalElement = document.getElementById('total');
+
+    subtotalElement.innerText = Number(partsSubtotal).toFixed(2);
+    taxElement.innerText = Number(totalTax).toFixed(2);
+    additionalChargesElement.innerText = Number(totalAdditionalCharges).toFixed(2);
+    totalElement.innerText = Number(overallTotal).toFixed(2);
+}
+
+function calculateLabor(e) {
+    // calculates the labor depending on which input the event originated from
+
+    const hoursElement = document.getElementById('laborHours');
+    const rateElement = document.getElementById('laborRate');
+    const laborElement = document.getElementById('labor');
+
+    // calculate the total labor of the hours or rate was changed
+    if (e.target == hoursElement || e.target == rateElement) {
+        const product = hoursElement.value * rateElement.value;
+        laborElement.value = Number(product).toFixed(2);
+    }
+
+    // clear the hours and rate if the labor was changed
+    if (e.target == laborElement) {
+        hoursElement.value = "";
+        rateElement.value = "";
+    }
+
+    // recalculate the totals
+    calculateTotals();
+
 }
 
 function addEventListeners() {
 
     // add row button
     document.getElementById('addRowBtn').addEventListener('click', () => addRowToTable());
+
+    // add table column visibility toggle to image
+    document.getElementById('tableVisibilityBtn').addEventListener('click', () => toggleTableView());
+
+    // add value verification to the additional charges inputs
+    const additionalChargesElements = document.querySelectorAll('#additionalCharges input');
+    for (const element of additionalChargesElements) {
+        element.addEventListener('change', (e) => {
+            e.target.value = Number(e.target.value).toFixed(2);
+        });
+    }
+
+    // add total calculation listeners to the additional charges inputs
+    const otherChargesInputs = document.querySelectorAll('#additionalCharges input:not(#laborHours, #laborRate, #labor');
+    for (const element of otherChargesInputs) {
+        element.addEventListener('change', () => calculateTotals());
+    }
+
+    // add different calculateLabor function to the labors specific inputs
+    const laborElements = document.querySelectorAll('#laborHours, #laborRate, #labor');
+    for (const element of laborElements) {
+        element.addEventListener('change', e => calculateLabor(e));
+    }
+
+
+}
+
+async function getAllParts() {
+
+    let response = await api('getAllParts');
+
+    if (response.success) {
+        partsList = response.data;
+        return partsList;
+    }
 }
 
 
@@ -268,11 +533,19 @@ async function main() {
         // add the event listeners
         addEventListeners();
 
-        // for (let i = 0; i < 20; i++) {
-        //     addRowToTable();
-        // }
+        // if workOrderData does not have any parts already, add a new row
+        if (!workOrderData.woInfo['Parts & Prices']) {
+            addRowToTable();
+        }
 
         toggleTableView();
+
+        // get a list of all the parts
+        getAllParts();
+
+        for (let i = 0; i < 0; i++) {
+            addRowToTable();
+        }
 
 
     } else {

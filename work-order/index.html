@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../styles.css">
@@ -52,111 +53,202 @@
 
     </div>
 
-    <div id="workOrderData">
-        <div id="splitLeft">
+    <div id="header">
 
-            <div id="woCustomerInfo">
-
-                <div>
-                    <div id="name"></div>
-                    <div id="otherCustomerInfo"></div>
-                </div>
-                <div>
-                    <div id="taxExempt"></div>
-                    <div id="taxExemptFormLink"></div>
-                    <div id="customerLevel"></div>
-                    <div id="customerColor">Color: </div>
-                </div>
-
-            </div>
-
-            <div id="woInfoContainer">
-
-                <div>
-                    <div>
-                        <div id="po"></div>
-                        <div id="status"></div>
-                    </div>
-                    <div id="dates">
-                        <div id="dateCreated"></div>
-                        <div id="lastModified"></div>
-                    </div>
-                    <div id="totals">
-                        <div>
-                            <label>SubTotal:</label>
-                            <label>Tax <small>(6.875%)</small>:</label>
-                            <label>Total:</label>
-                        </div>
-                        <div>
-                            <div id="subTotal">$100.00</div>
-                            <div id="tax">$6.88</div>
-                            <div id="total">$106.88</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tableContainer">
-                <div id="woParts">
-
-                    <table>
-                        <thead>
-                            <tr>
-                                <th class="small">QTY</th>
-                                <th class="medium">Part #</th>
-                                <th class="auto">Description</th>
-                                <th class="medium empView">Bought</th>
-                                <th class="medium" id="up-sold">Unit Price</th>
-                                <th class="medium custView">Unit Total</th>
-                                <th class="medium empView">Tax</th>
-                                <th class="fit">PP</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <div id="addRowBtn"><img src="../images/general/add.svg"></div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                </div>
-            </div>
-
+        <div id="headerInfo">
+            <img src="../images/DDHR_Logo.svg" alt="DDHR Logo">
+            <div>Work Order</div>
+            <hr>
+            <div>#0000-0000</div>
+            <div class="status open">Status</div>
         </div>
 
-        <div id="splitRight">
-
-            <div id="additionalCharges">
-                <label>Labor:</label>
-                <input id="labor" type="number" step="0.01" min="0" placeholder="0.00">
-                <br>
-
-                <label>Credit Card Fee:</label>
-                <input id="ccFee" type="number" step="0.01" min="0" placeholder="0.00">
-                <br>
-
-                <label>Shop Supplies:</label>
-                <input id="shopSupplies" type="number" step="0.01" min="0" placeholder="0.00">
-                <br>
-
-                <label>External Work:</label>
-                <input id="externalWork" type="number" step="0.01" min="0" placeholder="0.00">
-                <br>
-
-                <label>Plane & Degrease Heads:</label>
-                <input id="planeAndDegreaseHeads" type="number" step="0.01" min="0" placeholder="0.00">
-                <br>
-            </div>
-
-            <div id="notesContainer">
-                <label>Notes:</label>
-                <div id="notes"></div>
-            </div>
-
+        <div id="headerOptions">
+            <div>Print</div>
         </div>
+
     </div>
+
+    <!-- Work Order Area -->
+    <div id="workOrderContainer">
+
+        <div id="splitTop">
+
+            <div id="workOrderInfo" class="card">
+                <div class="cardHeader">
+                    <img src="../images/general/document.svg" alt="Document">
+                    <div>Work Order Details</div>
+                </div>
+                <div class="cardContent">
+                    <div>
+                        <div>
+                            <div id="po"></div>
+                            <div id="status"></div>
+                        </div>
+                        <div id="dates">
+                            <div id="dateCreated"></div>
+                            <div id="lastModified"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="customerInfo" class="card">
+                <div class="cardHeader">
+                    <img src="../images/general/account_circle.svg" alt="Account Circle">
+                    <div>Customer Information</div>
+                </div>
+                <div class="cardContent">
+                    <div>
+                        <div id="name"></div>
+                        <div id="otherCustomerInfo"></div>
+                    </div>
+                    <div>
+                        <div id="taxExempt"></div>
+                        <div id="taxExemptFormLink"></div>
+                        <div id="customerLevel"></div>
+                        <div id="customerColor">Color: </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="splitBottom">
+
+            <div id="splitLeft">
+
+                <img id="tableVisibilityBtn" class="button" src="../images/general/visibility_off.svg">
+
+                <div id="tableContainerBackground">
+                    <div id="tableContainer">
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="small">QTY</th>
+                                    <th class="medium">Part #</th>
+                                    <th class="auto">Description</th>
+                                    <th class="medium empView">Bought</th>
+                                    <th class="medium" id="up-sold">Unit Price</th>
+                                    <th class="medium custView">Unit Total</th>
+                                    <th class="medium empView">Tax</th>
+                                    <th class="fit">PP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- leave the body empty for rows to be added automatically -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="1">
+                                        <div id="addRowBtn" class="button" colspan="2"><img src="../images/general/add.svg"></div>
+                                    </td>
+                                    <td colspan="7">
+
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="splitRight">
+
+                <div id="additionalCharges" class="card">
+                    <div class="cardHeader">
+                        <img src="../images/general/money.svg" alt="Money">
+                        <div>Additional Charges</div>
+                    </div>
+                    <div class="cardContent">
+                        <div>
+                            <label>Labor:</label>
+                            <span>
+                                <input id="laborHours" type="number" step="0.01" min="0" placeholder="0.00">
+                                <small>hrs</small>
+                            </span>
+                            <span>
+                                <input id="laborRate" type="number" step="0.01" min="0" placeholder="0.00">
+                                <small>rate</small>
+                            </span>
+                            <span class="price">
+                                <input id="labor" type="number" step="0.01" min="0" placeholder="0.00">
+                            </span>
+                        </div>
+                        <div>
+                            <label>Credit Card Fee:</label>
+                            <span class="price">
+                                <input id="ccFee" type="number" step="0.01" min="0" placeholder="0.00">
+                            </span>
+                        </div>
+                        <div>
+                            <label>Shop Supplies:</label>
+                            <span class="price">
+                                <input id="shopSupplies" type="number" step="0.01" min="0" placeholder="0.00">
+                            </span>
+                        </div>
+                        <div>
+                            <label>External Work:</label>
+                            <span class="price">
+                                <input id="externalWork" type="number" step="0.01" min="0" placeholder="0.00">
+                            </span>
+                        </div>
+                        <div>
+                            <label>Plane & Degrease Heads:</label>
+                            <span class="price">
+                                <input id="planeAndDegreaseHeads" type="number" step="0.01" min="0" placeholder="0.00">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="notesContainer" class="card">
+                    <div class="cardHeader">
+                        <img src="../images/general/notes.svg" alt="Notes">
+                        <div>Notes</div>
+                    </div>
+                    <div class="cardContent">
+                        <textarea id="notes" rows="3" placeholder="Add notes for customer..."></textarea>
+                    </div>
+                </div>
+
+                <div id="totals" class="card">
+                    <div class="cardContent">
+                        <div>
+                            <div>
+                                <label>Parts Subtotal:</label>
+                                <label>Tax <small>(6.875%)</small>:</label>
+                            </div>
+                            <div>
+                                <div id="subTotal" class="price">0.00</div>
+                                <div id="tax" class="price">0.00</div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div>
+                            <div>
+                                <label>Additional Charges:</label>
+                            </div>
+                            <div>
+                                <div id="additionalChargesTotal" class="price">0.00</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cardFooter">
+                        <div>TOTAL</div>
+                        <div id="total" class="price">0.00</div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 
     <script src="script.js" type="module" defer></script>
 
