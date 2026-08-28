@@ -10,6 +10,7 @@
 input,
 textarea {
     border: solid 1px var(--lightGrey);
+    accent-color: var(--ddhrRed);
 }
 
 input:focus,
@@ -22,43 +23,36 @@ textarea:focus {
     font-weight: bold;
     padding: 4px 10px;
     border-radius: 5px;
+    color: var(--accent);
+    background-color: color-mix(in srgb, var(--accent) 15%, transparent);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 40%, transparent);
+    border: solid 1px var(--accent);
 }
 
 .status.open {
-    color: var(--ddhrRed);
-    background-color: rgb(255 0 0 / 15%);
-    box-shadow: 0 0 8px rgb(255 0 0 / 40%);
-    border: solid 1px var(--ddhrRed);
+    --accent: var(--ddhrRed);
+    --text-content: "Open";
 }
 
 .status.paid {
-    color: #22aa44;
-    background-color: rgb(0 180 50 / 15%);
-    box-shadow: 0 0 8px rgb(0 180 50 / 40%);
-    border: solid 1px #22aa44;
+    --accent: #22aa44;
+    --text-content: "Paid In Full";
 }
 
-.status.partialPay {
-    color: #ee8800;
-    background-color: rgb(255 140 0 / 15%);
-    box-shadow: 0 0 8px rgb(255 140 0 / 40%);
-    border: solid 1px #ee8800;
+.status.partial {
+    --accent: #ee8800;
+    --text-content: "Partially Paid";
 }
 
-.status.open::before {
-    content: "Open";
-    color: red;
+.status.quote {
+    --accent: #b610b6;
+    --text-content: "Quote";
 }
 
-.status.paid::before {
-    content: "Paid";
-    color: green;
+.status::before {
+    content: var(--text-content);
 }
 
-.status.partialPay::before {
-    content: "Partial Pay";
-    color: orange;
-}
 
 #workOrderContainer {
     width: 100%;
@@ -104,6 +98,21 @@ textarea:focus {
     height: 60%;
     background-color: var(--ddhrRed);
     border: none;
+}
+
+#headerOptions .button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--darkGrey);
+    border-radius: 999px;
+    padding: 0.25rem 0.5rem;
+}
+
+#headerOptions img {
+    height: 1.5rem;
+    margin-right: 0.25rem;
 }
 
 
@@ -186,7 +195,8 @@ textarea:focus {
     width: 100%;
 }
 
-#customerInfo {
+#customerInfo,
+#workOrderInfo {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -195,14 +205,157 @@ textarea:focus {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+        font-size: small;
+    }
+
+    label {
+        width: 7rem;
+        min-width: 7rem;
+    }
+
+    hr {
+        width: 1px;
+        height: 100%;
+        background-color: var(--lightGrey);
+        border: none;
+        margin: 0 30px;
     }
 }
 
-#workOrderInfo {
+#customerInfo .cardContent {
+    flex: 1;
+}
+
+#woMainDetails,
+#custMainDetails,
+#custSecondaryDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+#custMainDetails {
+    flex: 1;
+}
+
+#woMainDetails>div,
+#custMainDetails>div,
+#custSecondaryDetails>div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#custMainDetails>div {
+    align-items: flex-start;
+}
+
+#custMainDetails {
+    min-width: 50%;
+}
+
+#woSecondaryDetails {
     display: flex;
     flex-direction: column;
     flex: 1;
 }
+
+#name,
+#customerId,
+#phone,
+#email {
+    display: -webkit-box;
+    line-clamp: 1;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+#address {
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+
+#paymentHistory {
+    width: 100%;
+    border: solid 1px var(--lightGrey);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin-bottom: 3px;
+    position: relative;
+}
+
+#paymentHistory label {
+    width: 100%;
+    background-color: var(--lightGrey);
+    padding: 0 5px;
+    box-sizing: border-box;
+    height: 1rem;
+}
+
+#paymentHistoryContainer {
+    padding: 5px;
+    overflow-y: auto;
+    box-sizing: border-box;
+    position: absolute;
+    top: 1rem;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+#noPaymentHistory {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    color: var(--lightGrey);
+}
+
+.paymentCard {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    border-bottom: solid 1px var(--lightGrey);
+    margin: 2px 0;
+    cursor: pointer;
+}
+
+#paymentHistoryContainer>.paymentCard:last-child {
+    border-bottom: none;
+}
+
+#outstanding {
+    color: var(--ddhrRed);
+    font-size: medium;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: auto;
+    margin-bottom: 3px;
+}
+
+#status {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#status .chevron {
+    background-color: var(--accent);
+    height: 0.5rem;
+    width: 0.75rem;
+    margin-left: 0.5rem;
+    clip-path: polygon(80% 0, 100% 0, 50% 100%, 0 0, 20% 0, 50% 60%);
+}
+
 
 #additionalCharges .cardContent {
     display: flex;
@@ -212,7 +365,7 @@ textarea:focus {
 }
 
 #additionalCharges label {
-    padding-right: 50px;
+    margin-right: auto;
 }
 
 #additionalCharges .cardContent>div {
@@ -221,10 +374,16 @@ textarea:focus {
     justify-content: space-between;
 }
 
-#additionalCharges input {
+#additionalCharges input[type="number"] {
     width: 50px;
     appearance: textfield;
     border-radius: 5px;
+}
+
+#additionalCharges small {
+    display: inline-block;
+    width: 1rem;
+    margin-right: 10px;
 }
 
 #additionalCharges input[type="number"]::-webkit-outer-spin-button,
@@ -233,12 +392,32 @@ textarea:focus {
     margin: 0;
 }
 
-#notes {
+#splitRight>.card {
+    min-height: 0;
+}
+
+#notesContainer {
+    min-height: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#notesContainer .cardContent {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+}
+
+#notes,
+#description {
     border: 1px solid var(--lightGrey);
     border-radius: 5px;
     width: 100%;
     resize: none;
     box-sizing: border-box;
+    min-height: 0;
+    flex: 1;
 }
 
 #totals .cardContent {
@@ -270,7 +449,7 @@ textarea:focus {
 }
 
 #tableContainerBackground {
-    background-color: var(--offWhite);
+    background-color: var(--lightGrey);
     flex: 1;
     min-height: 0;
     width: 100%;

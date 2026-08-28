@@ -4,6 +4,7 @@ import { api } from '../script.js';
 let partsList;
 let customerInfo;
 const tax = 0.06875;
+const defaultCreditCardFee = 3.00;
 
 async function createWorkOrder(id) {
 
@@ -19,19 +20,19 @@ async function createWorkOrder(id) {
     if (result.success) {
         console.log(
             "Created work order # " +
-            result.data.woInfo.PO
+            result.data.woInfo.wo
         );
         return result.data
     }
 
 }
 
-async function openWorkOrder(po) {
+async function openWorkOrder(wo) {
 
     const result = await api(
         "openWorkOrder",
         {
-            po: po
+            wo: wo
         }
     );
 
@@ -65,46 +66,39 @@ function displayWorkOrderData(data) {
     url.searchParams.delete('create');
     url.searchParams.delete('id');
     url.searchParams.set('open', '1');
-    url.searchParams.set('po', data.woInfo.PO);
+    url.searchParams.set('wo', data.woInfo.wo);
     window.history.replaceState({}, '', url);
 
     const loadingPage = document.getElementById('loginContainer');
     loadingPage.classList.add('hidden');
 
+    // add the customer details to the page
     const cInfo = data.customerInfo;
     customerInfo = cInfo;
-    const otherCustomerInfo = document.getElementById('otherCustomerInfo');
-    for (let key in cInfo) {
-        if (key.startsWith("CC ")) {
-            continue;
-        }
-        let value = cInfo[key];
-        let id = toCamelCase(key);
-        let element = document.getElementById(id);
-        if (!element) {
-            element = document.createElement('div');
-            otherCustomerInfo.appendChild(element);
-        }
-        element.innerText = key + ": " + value;
-    }
+    console.log(customerInfo)
+    document.getElementById('name').innerText = cInfo.name;
+    document.getElementById('customerId').innerText = String(cInfo.customer_id).padStart(6, "0");
+    document.getElementById('phone').innerText = cInfo.phone;
+    document.getElementById('email').innerText = cInfo.email;
+    document.getElementById('address').innerText = cInfo.address;
+    document.getElementById('taxExempt').innerText = cInfo.tax_exempt;
+    document.getElementById('customerLevel').innerText = "LEVEL " + cInfo.customer_level;
+    document.getElementById('colorCode').innerText = cInfo.color_code;
 
+    // add the work order details to the page
     const woInfo = data.woInfo;
-    for (let key in woInfo) {
-        let value = woInfo[key];
-        let id = toCamelCase(key);
-        let element = document.getElementById(id);
-        if (!element) {
-            console.log("No place for: " + key);
-            continue;
-        }
-        element.innerText = key + ": " + value;
-    }
+    document.getElementById('wo').innerText = woInfo.wo;
+    document.getElementById('status').classList.add(woInfo.status);
+    const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' };
+    document.getElementById('dateCreated').innerText = new Intl.DateTimeFormat('en-US', dateOptions).format(new Date(woInfo.date_created));
+    document.getElementById('lastModified').innerText = new Intl.DateTimeFormat('en-US', dateOptions).format(new Date(woInfo.last_modified));
+    document.getElementById('notes').innerText = woInfo.notes;
 
     // also update the header
     const headerDiv = document.getElementById('headerInfo');
     //headerDiv.querySelector('div:nth-of-type(1)').innerText = woInfo.fileType;
-    headerDiv.querySelector('div:nth-of-type(2)').innerText = "#" + woInfo.PO;
-    headerDiv.querySelector('div:nth-of-type(3)').innerText = woInfo.Status;
+    headerDiv.querySelector('div:nth-of-type(2)').innerText = "#" + woInfo.wo;
+    headerDiv.querySelector('div:nth-of-type(3)').classList.add(woInfo.Status);
 
 }
 
@@ -403,21 +397,20 @@ function toggleTableView() {
 function calculateTotals() {
     // calculate the parts subtotal, tax, and additional charges
 
-    let partsSubtotal, totalTax, totalAdditionalCharges, overallTotal;
-    partsSubtotal = totalTax = totalAdditionalCharges = overallTotal = 0;
+    let totalAdditionalCharges, overallTotal;
+    totalAdditionalCharges = overallTotal = 0;
 
     // calculate the parts and tax totals
-    const rows = document.querySelectorAll("#tableContainer > table > tbody > tr");
-    for (const row of rows) {
-        const unitTotal = Number(row.querySelector("td:nth-of-type(6) > input").value);
-        const tax = Number(row.querySelector("td:nth-of-type(7) > input").value);
+    const { partsSubtotal: partsSubtotal, totalTax: totalTax } = calculateParts();
 
-        partsSubtotal += unitTotal;
-        totalTax += tax;
-    }
+    // calculate the ccFee
+    calculateCreditCardFee();
+
+    // calculate the shop supplies
+    calculateShopSupplies();
 
     // calculate the additional charges
-    const additionalChargesElements = document.querySelectorAll('#additionalCharges input:not(#laborHours, #laborRate)');
+    const additionalChargesElements = document.querySelectorAll('#additionalCharges .price input');
     for (const element of additionalChargesElements) {
         totalAdditionalCharges += Number(element.value);
     }
@@ -434,6 +427,31 @@ function calculateTotals() {
     taxElement.innerText = Number(totalTax).toFixed(2);
     additionalChargesElement.innerText = Number(totalAdditionalCharges).toFixed(2);
     totalElement.innerText = Number(overallTotal).toFixed(2);
+
+    // recalculate the outstanding balance
+    calculateOutstandingBalance(overallTotal);
+}
+
+function calculateParts() {
+    // calculate the parts and tax totals
+
+    let partsSubtotal = 0;
+    let totalTax = 0;
+
+    const rows = document.querySelectorAll("#tableContainer > table > tbody > tr");
+    for (const row of rows) {
+        const unitTotal = Number(row.querySelector("td:nth-of-type(6) > input").value);
+        const tax = Number(row.querySelector("td:nth-of-type(7) > input").value);
+
+        partsSubtotal += unitTotal;
+        totalTax += tax;
+    }
+
+    return {
+        "partsSubtotal": partsSubtotal,
+        "totalTax": totalTax
+    };
+
 }
 
 function calculateLabor(e) {
@@ -460,6 +478,129 @@ function calculateLabor(e) {
 
 }
 
+function calculateCreditCardFee(e) {
+    // calculates the credit card fee if the checkbox is checked
+
+    // prevent errors if called from another function
+    if (!e) {
+        e = {};
+        e.target = null;
+    }
+
+    const ccFee = document.getElementById('ccFee');
+    const ccFeeCheckbox = document.getElementById('ccFeeCheckbox');
+    const ccFeePercentage = document.getElementById('ccFeePercentage');
+
+    // change the percentage and checkbox if the user manually inputs the fee
+    if (e.target == ccFee) {
+
+        ccFeeCheckbox.checked = true;
+        ccFeePercentage.value = "";
+
+    } else {
+
+        // change back to the default cc fee if it is blank and the user changed the checkbox
+        if (e.target == ccFeeCheckbox && ccFeeCheckbox.checked && ccFeePercentage.value == "") {
+            ccFeePercentage.value = Number(defaultCreditCardFee).toFixed(2);
+        }
+
+        // only calculate the fee if the percentage has a value, or if the checkbox is unchecked
+        if (ccFeePercentage.value || !ccFeeCheckbox.checked) {
+
+            // calculate the cc fee
+            const percentage = Number(ccFeePercentage.value) * 0.01;
+            const labor = Number(document.getElementById('labor').value);
+            const shopSupplies = Number(document.getElementById('shopSupplies').value);
+            const externalWork = Number(document.getElementById('externalWork').value);
+            const planeAndDegreaseHeads = Number(document.getElementById('planeAndDegreaseHeads').value);
+            // calculate the parts and tax totals
+            const { partsSubtotal: partsSubtotal, totalTax: totalTax } = calculateParts();
+            const isChecked = Number(ccFeeCheckbox.checked);
+
+            const fee = isChecked * (percentage * (labor + shopSupplies + externalWork + planeAndDegreaseHeads + partsSubtotal + totalTax));
+            ccFee.value = Number(fee).toFixed(2);
+
+        }
+
+    }
+
+    // calculate the totals if the target element exists
+    if (e.target) {
+        calculateTotals();
+    }
+}
+
+function calculateShopSupplies(e) {
+    // calculates the shop supplies for the additional charges
+
+    // prevent errors if called from another function
+    if (!e) {
+        e = {};
+        e.target = null;
+    }
+
+    const shopSuppliesPercentage = document.getElementById('shopSuppliesPercentage');
+    const shopSupplies = document.getElementById('shopSupplies');
+
+    // if the shopSupplies were changed manually, clear the percentage
+    if (e.target == shopSupplies) {
+        shopSuppliesPercentage.value = "";
+
+    } else {
+        // only calculate the shop supplies if the percentage input has a value
+        if (shopSuppliesPercentage.value) {
+
+            // calculate the shop supplies by multiplying the percentage by the labor
+            const percentage = Number(shopSuppliesPercentage.value) * 0.01;
+            const labor = Number(document.getElementById('labor').value);
+            const product = percentage * labor;
+            shopSupplies.value = Number(product).toFixed(2);
+
+        }
+
+    }
+
+    // calculate the totals if the target element exists
+    if (e.target) {
+        calculateTotals();
+    }
+}
+
+function calculateOutstandingBalance(woTotal) {
+    // takes the wo total and other payments and calculates the outstanding balance
+
+    const outstandingLabel = document.querySelector("#outstanding > div.price");
+    outstandingLabel.innerText = Number(woTotal).toFixed(2);
+}
+
+function displayPaymentCard(details) {
+    // displays a payment card under the payment history section of the work order details
+
+    details = {
+        date: "2026-08-23T16:30:00.000Z",
+        amount: 100
+    };
+
+    // make sure that the noPaymentHistory element is hidden
+    const noPaymentHistory = document.getElementById('noPaymentHistory');
+    noPaymentHistory.classList.add('hidden');
+
+    const newElement = document.createElement('div');
+    newElement.classList.add('paymentCard');
+
+    const dateOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
+    const formattedDate = new Intl.DateTimeFormat('en-US', dateOptions).format(new Date(details.date));
+    const formattedAmount = Number(details.amount).toFixed(2);
+
+    newElement.innerHTML = `
+                            <div>${formattedDate}</div>
+                            <div class="price">${formattedAmount}</div>
+                            `;
+
+    const container = document.getElementById('paymentHistoryContainer');
+    container.appendChild(newElement);
+}
+
 function addEventListeners() {
 
     // add row button
@@ -477,7 +618,7 @@ function addEventListeners() {
     }
 
     // add total calculation listeners to the additional charges inputs
-    const otherChargesInputs = document.querySelectorAll('#additionalCharges input:not(#laborHours, #laborRate, #labor');
+    const otherChargesInputs = document.querySelectorAll('#additionalCharges .price input:not(#labor, #ccFee, #shopSupplies');
     for (const element of otherChargesInputs) {
         element.addEventListener('change', () => calculateTotals());
     }
@@ -488,6 +629,17 @@ function addEventListeners() {
         element.addEventListener('change', e => calculateLabor(e));
     }
 
+    // add different calculateCreditCardFee function to the ccFee specific inputs
+    const ccFeeElements = document.querySelectorAll('#ccFee, #ccFeeCheckbox, #ccFeePercentage');
+    for (const element of ccFeeElements) {
+        element.addEventListener('change', e => calculateCreditCardFee(e));
+    }
+
+    // add different calculateShopSupplies function to the shopSupplies specific inputs
+    const shopSuppliesElements = document.querySelectorAll('#shopSupplies, #shopSuppliesPercentage');
+    for (const element of shopSuppliesElements) {
+        element.addEventListener('change', e => calculateShopSupplies(e));
+    }
 
 }
 
@@ -520,8 +672,8 @@ async function main() {
             workOrderData = await createWorkOrder(id);
 
         } else if (open) {
-            const po = params.get('po');
-            workOrderData = await openWorkOrder(po);
+            const wo = params.get('wo');
+            workOrderData = await openWorkOrder(wo);
 
         } else {
             // send the user back to the main page to login
@@ -546,6 +698,8 @@ async function main() {
         for (let i = 0; i < 0; i++) {
             addRowToTable();
         }
+
+        displayPaymentCard();
 
 
     } else {

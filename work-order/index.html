@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="../styles.css">
 
     <!--- Declare the icons for the webpage --->
-    <link rel="icon" href="images/DDHR_Logo.svg" />
-    <link rel="apple-touch-icon" href="images/full.png">
-    <link rel="mask-icon" href="images/masked.png" color="#000000">
+    <link rel="icon" href="../images/general/document.svg" />
+    <link rel="apple-touch-icon" href="../images/general/document.svg">
+    <link rel="mask-icon" href="../images/general/document.svg" color="#000000">
 
     <title>Work Order</title>
 </head>
@@ -56,15 +56,22 @@
     <div id="header">
 
         <div id="headerInfo">
-            <img src="../images/DDHR_Logo.svg" alt="DDHR Logo">
+            <img src="../images/DDHR_Logo_white.svg" alt="DDHR Logo">
             <div>Work Order</div>
             <hr>
             <div>#0000-0000</div>
-            <div class="status open">Status</div>
+            <div class="status open"></div>
         </div>
 
         <div id="headerOptions">
-            <div>Print</div>
+            <div class="button">
+                <img src="../images/general/payment.svg" alt="Payment">
+                Make Payment
+            </div>
+            <div class="button">
+                <img src="../images/general/print.svg" alt="Print">
+                Print
+            </div>
         </div>
 
     </div>
@@ -80,14 +87,43 @@
                     <div>Work Order Details</div>
                 </div>
                 <div class="cardContent">
-                    <div>
+                    <div id="woMainDetails">
                         <div>
-                            <div id="po"></div>
-                            <div id="status"></div>
+                            <label>WO#:</label>
+                            <div id="wo"></div>
                         </div>
-                        <div id="dates">
+                        <div>
+                            <label>Status: </label>
+                            <div id="status" class="status button">
+                                <div class="chevron"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <label>Date Created: </label>
                             <div id="dateCreated"></div>
+                        </div>
+                        <div>
+                            <label>Last Modified: </label>
                             <div id="lastModified"></div>
+                        </div>
+                        <div>
+                            <label>Description: </label>
+                            <div>
+                                <textarea id="description" rows="1" placeholder="Optional job title..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div id="woSecondaryDetails">
+                        <div id="paymentHistory">
+                            <label>Payment History</label>
+                            <div id="paymentHistoryContainer">
+                                <div id="noPaymentHistory">No Payment history</div>
+                            </div>
+                        </div>
+                        <div id="outstanding">
+                            <label>Outstanding:</label>
+                            <div class="price">0.00</div>
                         </div>
                     </div>
                 </div>
@@ -99,15 +135,47 @@
                     <div>Customer Information</div>
                 </div>
                 <div class="cardContent">
-                    <div>
-                        <div id="name"></div>
+                    <div id="custMainDetails">
+                        <div>
+                            <label>Name:</label>
+                            <div id="name"></div>
+                        </div>
+                        <div>
+                            <label>Customer ID:</label>
+                            <div id="customerId"></div>
+                        </div>
+                        <div>
+                            <label>Phone:</label>
+                            <div id="phone"></div>
+                        </div>
+                        <div>
+                            <label>Email:</label>
+                            <div id="email"></div>
+                        </div>
+                        <div>
+                            <label>Address:</label>
+                            <div id="address"></div>
+                        </div>
                         <div id="otherCustomerInfo"></div>
                     </div>
-                    <div>
-                        <div id="taxExempt"></div>
-                        <div id="taxExemptFormLink"></div>
-                        <div id="customerLevel"></div>
-                        <div id="customerColor">Color: </div>
+                    <hr>
+                    <div id="custSecondaryDetails">
+                        <div>
+                            <label>Tax Exempt:</label>
+                            <div id="taxExempt"></div>
+                        </div>
+                        <div>
+                            <label>Customer Level:</label>
+                            <div id="customerLevel"></div>
+                        </div>
+                        <div>
+                            <label>Color Code:</label>
+                            <div id="colorCode"></div>
+                        </div>
+                        <div>
+                            <label>Store Credit:</label>
+                            <div id="storeCredit" class="price">0.00</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -120,7 +188,7 @@
 
                 <img id="tableVisibilityBtn" class="button" src="../images/general/visibility_off.svg">
 
-                <div id="tableContainerBackground">
+                <div id="tableContainerBackground" class="card">
                     <div id="tableContainer">
 
                         <table>
@@ -171,7 +239,7 @@
                                 <small>hrs</small>
                             </span>
                             <span>
-                                <input id="laborRate" type="number" step="0.01" min="0" placeholder="0.00">
+                                <input id="laborRate" type="number" step="0.01" min="0" placeholder="0.00" value="100.00">
                                 <small>rate</small>
                             </span>
                             <span class="price">
@@ -180,12 +248,23 @@
                         </div>
                         <div>
                             <label>Credit Card Fee:</label>
+                            <span>
+                                <input id="ccFeeCheckbox" type="checkbox">
+                            </span>
+                            <span>
+                                <input id="ccFeePercentage" type="number" step="0.01" min="0" placeholder="-.--" value="3.00">
+                                <small>%</small>
+                            </span>
                             <span class="price">
                                 <input id="ccFee" type="number" step="0.01" min="0" placeholder="0.00">
                             </span>
                         </div>
                         <div>
                             <label>Shop Supplies:</label>
+                            <span>
+                                <input id="shopSuppliesPercentage" type="number" step="0.01" min="0" placeholder="-.--" value="8.00">
+                                <small>%</small>
+                            </span>
                             <span class="price">
                                 <input id="shopSupplies" type="number" step="0.01" min="0" placeholder="0.00">
                             </span>
