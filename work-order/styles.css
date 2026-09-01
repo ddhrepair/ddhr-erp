@@ -30,27 +30,63 @@ textarea:focus {
 }
 
 .status.open {
-    --accent: var(--ddhrRed);
+    --accent: var(--red);
     --text-content: "Open";
 }
 
 .status.paid {
-    --accent: #22aa44;
+    --accent: var(--green);
     --text-content: "Paid In Full";
 }
 
 .status.partial {
-    --accent: #ee8800;
+    --accent: var(--orange);
     --text-content: "Partially Paid";
 }
 
 .status.quote {
-    --accent: #b610b6;
+    --accent: var(--purple);
     --text-content: "Quote";
 }
 
 .status::before {
     content: var(--text-content);
+}
+
+#statusDropdownContainer {
+    margin-top: auto;
+    margin-left: 0.5rem;
+    margin-right: -0.5rem;
+}
+
+#statusDropdown {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    position: absolute;
+    z-index: 1;
+    background-color: var(--white);
+    outline: solid 1px var(--darkGrey);
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    padding: 0.5rem 1rem;
+    border-radius: 0 5px 5px 5px;
+
+    max-height: 0;
+    visibility: hidden;
+    overflow: hidden;
+    transition:
+        max-height 200ms ease,
+        visibility 200ms;
+}
+
+#statusDropdown.show {
+    max-height: 500px;
+    visibility: visible;
+    transition:
+        max-height 1000ms ease,
+        visibility 0s;
 }
 
 
@@ -69,7 +105,7 @@ textarea:focus {
     width: 100%;
     height: var(--headerHeight);
     background-color: var(--darkGrey);
-    color: #ffffff;
+    color: var(--white);
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -85,11 +121,11 @@ textarea:focus {
     gap: var(--mainGap);
 }
 
-#headerInfo img {
+#headerInfo>img {
     height: 80%;
 }
 
-#headerInfo div:nth-of-type(1) {
+#headerInfo>div:nth-of-type(1) {
     font-weight: bold;
 }
 
@@ -98,6 +134,24 @@ textarea:focus {
     height: 60%;
     background-color: var(--ddhrRed);
     border: none;
+}
+
+#cloudSyncStatus {
+    font-size: x-small;
+}
+
+#cloudSyncStatus>div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#cloudSyncStatus img {
+    margin-right: 0.25rem;
+}
+
+#cloudSyncStatus .loading img {
+    animation: spin 4s linear infinite;
 }
 
 #headerOptions .button {
@@ -153,7 +207,7 @@ textarea:focus {
     border-radius: 5px;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     overflow: hidden;
-    background-color: #ffffff;
+    background-color: var(--white);
 }
 
 .cardHeader {
@@ -175,7 +229,7 @@ textarea:focus {
 }
 
 .cardFooter {
-    color: #ffffff;
+    color: var(--white);
     background-color: var(--ddhrRed);
     padding: 10px;
     display: flex;
@@ -186,7 +240,7 @@ textarea:focus {
 
 #splitBottom .cardHeader {
     background-color: var(--darkGrey);
-    color: #ffffff;
+    color: var(--white);
     align-items: center;
     padding: 3px 5px;
 }
@@ -346,6 +400,7 @@ textarea:focus {
     display: flex;
     flex-direction: row;
     align-items: center;
+    z-index: 2;
 }
 
 #status .chevron {
@@ -354,6 +409,112 @@ textarea:focus {
     width: 0.75rem;
     margin-left: 0.5rem;
     clip-path: polygon(80% 0, 100% 0, 50% 100%, 0 0, 20% 0, 50% 60%);
+    transform: rotate(90deg);
+    transition: transform 500ms;
+}
+
+#status .chevron.open {
+    transform: rotate(0deg) !important;
+    transition: transform 400ms;
+}
+
+#taxExemptFormLink {
+    width: 1rem;
+    height: 1rem;
+    padding-left: 0.5rem;
+    background-color: var(--black);
+    mask-image: url("../images/general/diagonal_link.svg");
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    -webkit-mask-image: url("../images/general/diagonal_link.svg");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+}
+
+#taxExemptFormLink:hover {
+    background-color: var(--blue);
+}
+
+#customerLevel {
+    color: var(--accent);
+    font-weight: bold;
+    border: solid 1px var(--accent);
+    border-radius: 5px;
+    background-color: color-mix(in srgb, var(--accent) 15%, transparent);
+    padding: 0 0.25rem;
+}
+
+#customerLevel:before {
+    content: var(--text-content);
+}
+
+#customerLevel.level1 {
+    --accent: var(--red);
+    --text-content: "LEVEL 1";
+}
+
+#customerLevel.level2 {
+    --accent: var(--orange);
+    --text-content: "LEVEL 2";
+}
+
+#customerLevel.level3 {
+    --accent: var(--green);
+    --text-content: "LEVEL 3";
+}
+
+#colorCode {
+    display: flex;
+    flex-direction: row;
+}
+
+#colorCode>div {
+    height: 1rem;
+    width: 1rem;
+    background-color: var(--accent);
+    border-radius: 999px;
+    margin-left: 0.5rem;
+}
+
+#colorCode:before {
+    content: var(--text-content);
+}
+
+.red {
+    --accent: var(--red);
+    --text-content: "Red";
+}
+
+.orange {
+    --accent: var(--orange);
+    --text-content: "Orange";
+}
+
+.yellow {
+    --accent: var(--yellow);
+    --text-content: "Yellow";
+}
+
+.green {
+    --accent: var(--green);
+    --text-content: "Green";
+}
+
+.blue {
+    --accent: var(--blue);
+    --text-content: "Blue";
+}
+
+.purple {
+    --accent: var(--purple);
+    --text-content: "Purple";
+}
+
+.pink {
+    --accent: var(--pink);
+    --text-content: "Pink";
 }
 
 
@@ -461,7 +622,7 @@ textarea:focus {
 
     flex: 1;
     overflow: auto;
-    outline: solid 1px #000000;
+    outline: solid 1px var(--black);
     outline-offset: -1px;
     min-height: 0;
     width: 100%;
@@ -470,8 +631,8 @@ textarea:focus {
     tbody,
     th,
     td {
-        background-color: #ffffff;
-        border: solid 0.5px #000000;
+        background-color: var(--white);
+        border: solid 0.5px var(--black);
     }
 
     table {
@@ -486,21 +647,21 @@ textarea:focus {
         position: sticky;
         top: 0;
         background-color: var(--ddhrRed);
-        color: #ffffff;
-        border-top: solid 1px #000000;
-        border-bottom: solid 2px #000000;
+        color: var(--white);
+        border-top: solid 1px var(--black);
+        border-bottom: solid 2px var(--black);
     }
 
     thead,
     thead th:nth-of-type(1) {
         border-top-left-radius: 5px;
-        border-left: solid 1px #000000;
+        border-left: solid 1px var(--black);
     }
 
     thead,
     thead th:last-of-type {
         border-top-right-radius: 5px;
-        border-right: solid 1px #000000;
+        border-right: solid 1px var(--black);
     }
 
     th.small {
@@ -529,12 +690,12 @@ textarea:focus {
     }
 
     tbody>tr:last-of-type>td {
-        border-bottom: solid 1px #000000;
+        border-bottom: solid 1px var(--black);
     }
 
     /* make even the disabled inputs look normal */
     input {
-        color: #000000;
+        color: var(--black);
         background-color: inherit;
     }
 
@@ -600,17 +761,28 @@ textarea:focus {
     tfoot,
     tfoot td {
         border-top: none;
-        border-bottom: solid 1px #000000;
+        border-bottom: solid 1px var(--black);
     }
 
     tfoot td:first-of-type {
         border-radius: 0 0 5px 5px;
-        border-left: solid 1px #000000;
+        border-left: solid 1px var(--black);
         box-shadow: 0.5px 0 0 #000;
     }
 
     tfoot td:last-of-type {
         background-color: transparent;
         border: none;
+    }
+}
+
+/* keyframes for a 360-degree rotation */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
     }
 }

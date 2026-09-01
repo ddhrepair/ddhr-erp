@@ -274,7 +274,7 @@ function addCustomersToDropdown(dict) {
     const dataList = document.getElementById('customers');
 
     // sort the customers alphabetically by name
-    const sorted = Object.entries(dict).sort((a, b) => a[1].Name.localeCompare(b[1].Name));
+    const sorted = Object.entries(dict).sort((a, b) => a[1].name.localeCompare(b[1].name));
     console.log(sorted);
 
     for (let i = 0; i < sorted.length; i++) {
@@ -299,7 +299,7 @@ function addCustomersToPinned2(list, customersDict) {
         let newElem = document.createElement('div');
         newElem.classList.add('button');
         let pElem = document.createElement('p');
-        pElem.innerText = customersDict[list[i]]['Name'];
+        pElem.innerText = customersDict[list[i]]['name'];
         let imgElem = document.createElement('img');
         imgElem.setAttribute('src', 'images/general/add.svg');
         newElem.appendChild(pElem);
@@ -320,7 +320,7 @@ function addCustomersToPinned(list, customersDict) {
     const container = document.getElementById('pinnedCustomers');
 
     for (let i = 0; i < list.length; i++) {
-        let name = customersDict[list[i]]['Name'];
+        let name = customersDict[list[i]]['name'];
         let customerId = list[i];
         let newElem = document.createElement('div');
         newElem.classList.add('button');

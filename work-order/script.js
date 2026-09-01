@@ -3,6 +3,7 @@ import { api } from '../script.js';
 //const partsList = [['1', 'Desc 1', 11.11], ['2', 'Desc 2', 22.22], ['3', 'Desc 3', 33.33]];
 let partsList;
 let customerInfo;
+let paymentHistory;
 const tax = 0.06875;
 const defaultCreditCardFee = 3.00;
 
@@ -81,9 +82,19 @@ function displayWorkOrderData(data) {
     document.getElementById('phone').innerText = cInfo.phone;
     document.getElementById('email').innerText = cInfo.email;
     document.getElementById('address').innerText = cInfo.address;
-    document.getElementById('taxExempt').innerText = cInfo.tax_exempt;
-    document.getElementById('customerLevel').innerText = "LEVEL " + cInfo.customer_level;
-    document.getElementById('colorCode').innerText = cInfo.color_code;
+    document.getElementById('customerLevel').classList.add("level" + cInfo.customer_level);
+    document.getElementById('colorCode').classList.add(cInfo.color_code || "red");
+    document.getElementById('storeCredit').innerText = Number(cInfo.store_credit).toFixed(2);
+    if (!cInfo.tax_exempt) {
+        document.getElementById('taxExempt').innerText = "NO";
+    } else {
+        document.getElementById('taxExempt').innerText = "YES";
+        let linkImage = document.getElementById('taxExemptFormLink');
+        linkImage.classList.remove('hidden');
+        linkImage.addEventListener('click', () => {
+            open(cInfo.exempt_form_link, "_blank");
+        });
+    }
 
     // add the work order details to the page
     const woInfo = data.woInfo;
@@ -93,12 +104,14 @@ function displayWorkOrderData(data) {
     document.getElementById('dateCreated').innerText = new Intl.DateTimeFormat('en-US', dateOptions).format(new Date(woInfo.date_created));
     document.getElementById('lastModified').innerText = new Intl.DateTimeFormat('en-US', dateOptions).format(new Date(woInfo.last_modified));
     document.getElementById('notes').innerText = woInfo.notes;
+    paymentHistory = woInfo.payment_history;
+    handlePaymentHistory(paymentHistory);
 
     // also update the header
     const headerDiv = document.getElementById('headerInfo');
     //headerDiv.querySelector('div:nth-of-type(1)').innerText = woInfo.fileType;
     headerDiv.querySelector('div:nth-of-type(2)').innerText = "#" + woInfo.wo;
-    headerDiv.querySelector('div:nth-of-type(3)').classList.add(woInfo.Status);
+    headerDiv.querySelector('div:nth-of-type(3)').classList.add(woInfo.status);
 
 }
 
@@ -566,6 +579,17 @@ function calculateShopSupplies(e) {
     }
 }
 
+function handlePaymentHistory(history) {
+    // displays the payment history and calculates the outstanding balance
+
+    if (!history) {
+        console.log('no history');
+        return;
+    }
+
+    console.log(history);
+}
+
 function calculateOutstandingBalance(woTotal) {
     // takes the wo total and other payments and calculates the outstanding balance
 
@@ -599,6 +623,89 @@ function displayPaymentCard(details) {
 
     const container = document.getElementById('paymentHistoryContainer');
     container.appendChild(newElement);
+}
+
+function openStatusDropdown(e) {
+    // show the dropdown menu for the status buttons
+
+    e.stopPropagation();
+
+    const dropdown = document.getElementById('statusDropdown');
+    const chevron = document.querySelector('#status .chevron');
+
+    dropdown.classList.toggle('show');
+    chevron.classList.toggle('open');
+
+    document.addEventListener('click', (e) => {
+        // check to see if the target is outside of the dropdown
+
+        dropdown.classList.remove('show');
+        chevron.classList.remove('open');
+        const status = e.target.parentNode.getAttribute('data-status');
+
+        // if a status button was clicked, change the status
+        if (dropdown.contains(e.target) && status != null) {
+            changeWoStatus(status, e);
+        }
+
+    }, { once: true });
+
+}
+
+function changeWoStatus(status, e) {
+    // changes the status of the work order to the specified value
+
+    const statusBtn = document.getElementById('status');
+
+    // only change the status if it is switched by the user
+    if (statusBtn.classList.contains(status)) {
+        return;
+    }
+
+    const statuses = ['open', 'paid', 'partial', 'quote'];
+    const headerStatus = document.querySelector('#headerInfo>div:nth-of-type(3)');
+    const statusElement = document.getElementById('status');
+    headerStatus.classList.remove(...statuses);
+    statusElement.classList.remove(...statuses);
+    headerStatus.classList.add(status);
+    statusElement.classList.add(status);
+
+    const color = getComputedStyle(statusBtn).getPropertyValue('--accent').trim();
+    setFavicon(color);
+}
+
+async function setFavicon(color) {
+    const response = await fetch('../images/general/document.svg');
+    let svg = await response.text();
+
+    svg = svg.replace(/fill="[^"]*"/g, `fill="${color}"`);
+
+    const favicon = document.querySelector('link[rel="icon"]');
+
+    favicon.href =
+        'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
+async function saveWorkOrder(e) {
+    // gathers all of the information about the work order and saves it to the cloud
+
+    console.log('saving...');
+    const successElement = document.querySelector('#cloudSyncStatus .success');
+    const loadingElement = document.querySelector('#cloudSyncStatus .loading');
+    const errorElement = document.querySelector('#cloudSyncStatus .error');
+
+    successElement.classList.add('hidden');
+    loadingElement.classList.remove('hidden');
+
+    // FIXME: instead of timeout, use real saving logic with error handling
+    setTimeout(() => {
+        loadingElement.classList.add('hidden');
+        successElement.classList.remove('hidden');
+        successElement.querySelector('span').classList.remove('hidden');
+        setTimeout(() => {
+            successElement.querySelector('span').classList.add('hidden');
+        }, 5000);
+    }, 5000);
 }
 
 function addEventListeners() {
@@ -640,6 +747,17 @@ function addEventListeners() {
     for (const element of shopSuppliesElements) {
         element.addEventListener('change', e => calculateShopSupplies(e));
     }
+
+    // monitor for when the status button is clicked
+    document.getElementById('status').addEventListener('click', (e) => openStatusDropdown(e));
+
+    // detect when the user presses command + s
+    document.addEventListener('keydown', (e) => {
+        if (e.key == "s" && e.metaKey) {
+            e.preventDefault();
+            saveWorkOrder(e);
+        }
+    });
 
 }
 

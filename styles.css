@@ -1,10 +1,19 @@
 /* define standard colors */
 :root {
     --ddhrRed: #D71416;
+    --black: #000000;
+    --white: #ffffff;
     --lightRed: #f07272;
     --lightGrey: #c6c6c6;
     --darkGrey: #2f2f2f;
     --offWhite: #eaeaea;
+    --red: #D71416;
+    --orange: #ee8800;
+    --yellow: #f0e91c;
+    --green: #22aa44;
+    --blue: #2a86ff;
+    --purple: #b610b6;
+    --pink: #f451b0;
 }
 
 html,
@@ -72,7 +81,7 @@ body {
 
 #menuBar {
     background-color: var(--ddhrRed);
-    color: #ffffff;
+    color: var(--white);
     width: 20%;
     height: 100%;
     position: fixed;
@@ -84,7 +93,7 @@ body {
         width: 50%;
         display: block;
         margin: 5% auto;
-        background-color: #ffffff;
+        background-color: var(--white);
         border-radius: 1vw;
         padding: 3% 20%;
     }
@@ -141,7 +150,7 @@ body {
             >input {
                 border-radius: 1vw;
                 padding: 1%;
-                border: 1px solid #000000;
+                border: 1px solid var(--black);
             }
 
             >input:focus {
@@ -151,7 +160,7 @@ body {
             >button {
                 border-radius: 9999px;
                 background-color: var(--lightRed);
-                color: #ffffff;
+                color: var(--white);
                 border: none;
                 padding: 1%;
             }
@@ -165,7 +174,7 @@ body {
             >button {
                 border-radius: 9999px;
                 background-color: var(--lightRed);
-                color: #ffffff;
+                color: var(--white);
                 border: none;
                 padding: 3% 5%;
             }
@@ -203,7 +212,7 @@ body {
 
             >div {
                 background-color: var(--lightRed);
-                color: #ffffff;
+                color: var(--white);
                 border-radius: 2vw;
                 aspect-ratio: 3 / 1;
                 max-width: 250px;

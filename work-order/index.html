@@ -61,6 +61,20 @@
             <hr>
             <div>#0000-0000</div>
             <div class="status open"></div>
+            <div id="cloudSyncStatus">
+                <div class="success">
+                    <img src="../images/general/cloud_done.svg" alt="Cloud Done">
+                    <span class="hidden">Saved To Cloud</span>
+                </div>
+                <div class="loading hidden">
+                    <img src="../images/general/sync.svg" alt="Cloud Done">
+                    <span>Saving...</span>
+                </div>
+                <div class="error hidden">
+                    <img src="../images/general/cloud_alert.svg" alt="Cloud Done">
+                    <span>Backup Error</span>
+                </div>
+            </div>
         </div>
 
         <div id="headerOptions">
@@ -94,6 +108,22 @@
                         </div>
                         <div>
                             <label>Status: </label>
+                            <div id="statusDropdownContainer">
+                                <div id="statusDropdown" class="">
+                                    <div data-status="open">
+                                        <div class="status button open"></div>
+                                    </div>
+                                    <div data-status="paid">
+                                        <div class="status button paid"></div>
+                                    </div>
+                                    <div data-status="partial">
+                                        <div class="status button partial"></div>
+                                    </div>
+                                    <div data-status="quote">
+                                        <div class="status button quote"></div>
+                                    </div>
+                                </div>
+                            </div>
                             <div id="status" class="status button">
                                 <div class="chevron"></div>
                             </div>
@@ -163,6 +193,7 @@
                         <div>
                             <label>Tax Exempt:</label>
                             <div id="taxExempt"></div>
+                            <div id="taxExemptFormLink" class="button hidden"></div>
                         </div>
                         <div>
                             <label>Customer Level:</label>
@@ -170,7 +201,9 @@
                         </div>
                         <div>
                             <label>Color Code:</label>
-                            <div id="colorCode"></div>
+                            <div id="colorCode">
+                                <div></div>
+                            </div>
                         </div>
                         <div>
                             <label>Store Credit:</label>
