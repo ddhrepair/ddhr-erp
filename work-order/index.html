@@ -219,7 +219,22 @@
 
             <div id="splitLeft">
 
-                <img id="tableVisibilityBtn" class="button" src="../images/general/visibility_off.svg">
+                <div id="tableButtonsContainer">
+                    <div class="button">
+                        <span>Farm</span>
+                        <input id="farmCheckbox" type="checkbox">
+                    </div>
+                    <div id="levelContainer">
+                        <div id="levelDropdownContainer">
+                            <div id="levelDropdown"></div>
+                        </div>
+                        <div id="levelButton" class="button">
+                            <span>1</span>
+                            <div class="chevron"></div>
+                        </div>
+                    </div>
+                    <img id="tableVisibilityBtn" class="button" src="../images/general/visibility_off.svg">
+                </div>
 
                 <div id="tableContainerBackground" class="card">
                     <div id="tableContainer">
@@ -227,14 +242,14 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th class="small">QTY</th>
-                                    <th class="medium">Part #</th>
-                                    <th class="auto">Description</th>
-                                    <th class="medium empView">Bought</th>
-                                    <th class="medium" id="up-sold">Unit Price</th>
-                                    <th class="medium custView">Unit Total</th>
-                                    <th class="medium empView">Tax</th>
-                                    <th class="fit">PP</th>
+                                    <th class="small" name="quantity">QTY</th>
+                                    <th class="medium" name="partNum">Part #</th>
+                                    <th class="auto" name="description">Description</th>
+                                    <th class="medium empView" name="bought">Bought</th>
+                                    <th class="medium" id="up-sold" name="unitPrice">Unit Price</th>
+                                    <th class="medium custView" name="unitTotal">Unit Total</th>
+                                    <th class="medium empView" name="tax">Tax</th>
+                                    <th class="fit" name="pp">PP</th>
                                 </tr>
                             </thead>
                             <tbody>

@@ -148,6 +148,7 @@ textarea:focus {
 
 #cloudSyncStatus img {
     margin-right: 0.25rem;
+    height: 1.5rem;
 }
 
 #cloudSyncStatus .loading img {
@@ -403,19 +404,18 @@ textarea:focus {
     z-index: 2;
 }
 
-#status .chevron {
+.chevron {
     background-color: var(--accent);
     height: 0.5rem;
     width: 0.75rem;
     margin-left: 0.5rem;
     clip-path: polygon(80% 0, 100% 0, 50% 100%, 0 0, 20% 0, 50% 60%);
-    transform: rotate(90deg);
-    transition: transform 500ms;
+    transition: transform 400ms;
 }
 
-#status .chevron.open {
-    transform: rotate(0deg) !important;
-    transition: transform 400ms;
+.chevron.open {
+    transform: rotate(180deg) !important;
+    transition: transform 325ms;
 }
 
 #taxExemptFormLink {
@@ -438,31 +438,16 @@ textarea:focus {
 }
 
 #customerLevel {
-    color: var(--accent);
+    color: var(--ddhrRed);
     font-weight: bold;
-    border: solid 1px var(--accent);
+    border: solid 1px var(--ddhrRed);
     border-radius: 5px;
-    background-color: color-mix(in srgb, var(--accent) 15%, transparent);
+    background-color: color-mix(in srgb, var(--ddhrRed) 15%, transparent);
     padding: 0 0.25rem;
 }
 
 #customerLevel:before {
-    content: var(--text-content);
-}
-
-#customerLevel.level1 {
-    --accent: var(--red);
-    --text-content: "LEVEL 1";
-}
-
-#customerLevel.level2 {
-    --accent: var(--orange);
-    --text-content: "LEVEL 2";
-}
-
-#customerLevel.level3 {
-    --accent: var(--green);
-    --text-content: "LEVEL 3";
+    content: "LEVEL ";
 }
 
 #colorCode {
@@ -602,6 +587,110 @@ textarea:focus {
         background-color: var(--lightGrey);
     }
 }
+
+#tableButtonsContainer {
+    display: flex;
+    flex-direction: row;
+    margin-bottom: 3px;
+
+    div.button {
+        background-color: var(--darkGrey);
+        color: var(--white);
+        font-size: small;
+        border-radius: 999px;
+        padding: 0 0.75rem;
+        margin: 0 10px 0 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    input {
+        accent-color: var(--white);
+        margin-left: 5px;
+        cursor: pointer;
+    }
+
+    input:focus {
+        outline: none;
+    }
+
+    .alert {
+        background-color: var(--yellow) !important;
+        outline: solid 1px var(--orange) !important;
+        color: var(--orange) !important;
+
+        .chevron {
+            --accent: var(--orange) !important;
+        }
+
+    }
+}
+
+#levelContainer {
+    display: flex;
+    flex-direction: row;
+}
+
+#levelDropdownContainer {
+    margin-top: auto;
+    margin-left: 0.5rem;
+    margin-right: -0.5rem;
+}
+
+#levelDropdown {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    position: absolute;
+    z-index: 1;
+    background-color: var(--white);
+    outline: solid 1px var(--darkGrey);
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    border-radius: 0 0 5px 5px;
+
+    max-height: 0;
+    visibility: hidden;
+    overflow: hidden;
+    transition:
+        max-height 200ms ease,
+        visibility 200ms;
+
+    .option {
+        padding: 0.25rem 1rem;
+    }
+
+    .option::before {
+        content: "Level ";
+    }
+
+    .option:hover {
+        cursor: pointer;
+        background-color: var(--offWhite);
+    }
+
+}
+
+#levelDropdown.show {
+    max-height: 500px;
+    visibility: visible;
+    transition:
+        max-height 1000ms ease,
+        visibility 0s;
+}
+
+#levelButton {
+    .chevron {
+        --accent: var(--white);
+    }
+}
+
+#levelButton>span::before {
+    content: "Level ";
+}
+
 
 #tableVisibilityBtn {
     margin-left: auto;

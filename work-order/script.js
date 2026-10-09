@@ -4,6 +4,11 @@ import { api } from '../script.js';
 let partsList;
 let customerInfo;
 let paymentHistory;
+let workOrderId;
+let dateCreated;
+let woStatus;
+let totals;
+let lastModified;
 const tax = 0.06875;
 const defaultCreditCardFee = 3.00;
 
@@ -23,6 +28,7 @@ async function createWorkOrder(id) {
             "Created work order # " +
             result.data.woInfo.wo
         );
+        workOrderId = result.data.woInfo.wo;
         return result.data
     }
 
@@ -41,6 +47,7 @@ async function openWorkOrder(wo) {
 
     if (result.success) {
         console.log(result.data);
+        workOrderId = result.data.woInfo.wo;
         return result.data;
     }
 
@@ -82,7 +89,9 @@ function displayWorkOrderData(data) {
     document.getElementById('phone').innerText = cInfo.phone;
     document.getElementById('email').innerText = cInfo.email;
     document.getElementById('address').innerText = cInfo.address;
-    document.getElementById('customerLevel').classList.add("level" + cInfo.customer_level);
+    document.getElementById('customerLevel').innerText = cInfo.customer_level;
+    document.getElementById('customerLevel').setAttribute('data-level', cInfo.customer_level);
+    document.querySelector("#levelButton > span").innerText = cInfo.customer_level;
     document.getElementById('colorCode').classList.add(cInfo.color_code || "red");
     document.getElementById('storeCredit').innerText = Number(cInfo.store_credit).toFixed(2);
     if (!cInfo.tax_exempt) {
@@ -94,18 +103,30 @@ function displayWorkOrderData(data) {
         linkImage.addEventListener('click', () => {
             open(cInfo.exempt_form_link, "_blank");
         });
+        changeTaxExemptStatus();
     }
 
     // add the work order details to the page
     const woInfo = data.woInfo;
     document.getElementById('wo').innerText = woInfo.wo;
-    document.getElementById('status').classList.add(woInfo.status);
+    changeWoStatus(woInfo.status);
     const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' };
     document.getElementById('dateCreated').innerText = new Intl.DateTimeFormat('en-US', dateOptions).format(new Date(woInfo.date_created));
     document.getElementById('lastModified').innerText = new Intl.DateTimeFormat('en-US', dateOptions).format(new Date(woInfo.last_modified));
-    document.getElementById('notes').innerText = woInfo.notes;
-    paymentHistory = woInfo.payment_history;
-    handlePaymentHistory(paymentHistory);
+    document.getElementById('notes').innerText = woInfo.notes || "";
+    document.getElementById('description').innerText = woInfo.description || "";
+
+
+    handlePartsAndPrices(woInfo.parts_and_prices);
+    handleAdditionalCharges(woInfo.additional_charges);
+    handleTotals(woInfo.totals);
+    handlePaymentHistory(woInfo.payment_history);
+
+    // set global values for a few of the attributes
+    workOrderId = woInfo.wo;
+    woStatus = woInfo.status;
+    dateCreated = woInfo.date_created;
+    lastModified = woInfo.last_modified;
 
     // also update the header
     const headerDiv = document.getElementById('headerInfo');
@@ -207,7 +228,7 @@ function recalculateRow(e) {
         } else {
             num = part['partNumber'];
             desc = part['description'];
-            price = part['level1'];
+            price = part['level' + document.querySelector('#levelButton > span').innerText];
             bought = part['ourPrice'];
         }
 
@@ -237,18 +258,18 @@ function recalculateRow(e) {
         const taxCell = getNamedColumn(parentRow, 'tax');
 
         let taxRate = tax;
-        if (customerInfo['Tax Exempt'] == true) {
+        if (document.querySelector("#farmCheckbox").checked == true) {
             taxRate = 0;
         }
 
         let calculatedTax;
         if (ppCell.checked == true) {
 
-            calculatedTax = ((sold - bought) * tax) * quantity;
+            calculatedTax = ((sold - bought) * taxRate) * quantity;
 
         } else {
 
-            calculatedTax = (sold * tax) * quantity;
+            calculatedTax = (sold * taxRate) * quantity;
 
         }
 
@@ -441,6 +462,13 @@ function calculateTotals() {
     additionalChargesElement.innerText = Number(totalAdditionalCharges).toFixed(2);
     totalElement.innerText = Number(overallTotal).toFixed(2);
 
+    // set the global totals variable
+    totals = {};
+    totals.parts_subtotal = subtotalElement.innerText;
+    totals.tax = taxElement.innerText;
+    totals.additional_charges = additionalChargesElement.innerText;
+    totals.total = totalElement.innerText;
+
     // recalculate the outstanding balance
     calculateOutstandingBalance(overallTotal);
 }
@@ -579,15 +607,87 @@ function calculateShopSupplies(e) {
     }
 }
 
-function handlePaymentHistory(history) {
-    // displays the payment history and calculates the outstanding balance
+function handlePartsAndPrices(dict) {
+    // add the parts to the table
 
-    if (!history) {
-        console.log('no history');
+    if (!dict || dict.parts_list.length == 0) {
+        addRowToTable();
         return;
     }
 
-    console.log(history);
+    if (dict.farm_tax_exempt !== document.querySelector('#farmCheckbox').checked) {
+        changeTaxExemptStatus();
+    }
+    changeCustomerLevel(dict.customer_level);
+
+    const headers = document.querySelectorAll("#tableContainer > table > thead > tr > th");
+    const partsList = dict.parts_list;
+    for (let row of partsList) {
+        addRowToTable();
+        let cols = document.querySelectorAll("#tableContainer > table > tbody > tr:last-of-type > td > input");
+        for (let i = 0; i < headers.length; i++) {
+            let header = headers[i];
+            let col = cols[i];
+            let value = row[header.getAttribute('name')];
+            if (col.type == 'checkbox') {
+                col.checked = value;
+            } else {
+                col.value = value;
+            }
+        }
+    }
+    document.activeElement.blur();
+}
+
+function handleAdditionalCharges(additionalCharges) {
+    // add the additional charges to the additionalCharges card
+
+    for (let [key, value] of Object.entries(additionalCharges)) {
+        let input = document.querySelector(`#${key}`);
+        if (input.type == 'checkbox') {
+            input.checked = value;
+        } else {
+            input.value = value;
+        }
+    }
+}
+
+function handleTotals(totals) {
+    // show the totals in the totals card
+
+    const subtotalElement = document.getElementById('subTotal');
+    const taxElement = document.getElementById('tax');
+    const additionalChargesElement = document.getElementById('additionalChargesTotal');
+    const totalElement = document.getElementById('total');
+
+    subtotalElement.innerText = totals.parts_subtotal;
+    taxElement.innerText = totals.tax;
+    additionalChargesElement.innerText = totals.additional_charges;
+    totalElement.innerText = totals.total;
+}
+
+function handlePaymentHistory(history) {
+    // displays the payment history and calculates the outstanding balance
+
+    console.log('paymentHistory: ', history);
+
+    if (!history) {
+        paymentHistory = {
+            outstanding: 0,
+            history: []
+        };
+        return;
+    }
+
+    // set global value
+    paymentHistory = history;
+
+    const outstandingElement = document.querySelector("#outstanding > div.price");
+    outstandingElement.innerText = Number(paymentHistory.outstanding).toFixed(2);
+
+    for (let payment of paymentHistory.history) {
+        displayPaymentCard(payment);
+    }
 }
 
 function calculateOutstandingBalance(woTotal) {
@@ -655,6 +755,8 @@ function openStatusDropdown(e) {
 function changeWoStatus(status, e) {
     // changes the status of the work order to the specified value
 
+    woStatus = status;
+
     const statusBtn = document.getElementById('status');
 
     // only change the status if it is switched by the user
@@ -695,17 +797,213 @@ async function saveWorkOrder(e) {
     const errorElement = document.querySelector('#cloudSyncStatus .error');
 
     successElement.classList.add('hidden');
+    errorElement.classList.add('hidden');
     loadingElement.classList.remove('hidden');
 
-    // FIXME: instead of timeout, use real saving logic with error handling
-    setTimeout(() => {
+    let woJSON = getWorkOrderJSON();
+    console.log(woJSON);
+
+    try {
+        let response = await api('saveWorkOrder', woJSON);
+        console.log(response);
+
+        if (response.success) {
+            loadingElement.classList.add('hidden');
+            successElement.classList.remove('hidden');
+            successElement.querySelector('span').classList.remove('hidden');
+            setTimeout(() => {
+                successElement.querySelector('span').classList.add('hidden');
+            }, 5000);
+            return;
+        }
+        throw new Error(response.error);
+
+    } catch (err) {
+        successElement.classList.add('hidden');
         loadingElement.classList.add('hidden');
-        successElement.classList.remove('hidden');
-        successElement.querySelector('span').classList.remove('hidden');
-        setTimeout(() => {
-            successElement.querySelector('span').classList.add('hidden');
-        }, 5000);
-    }, 5000);
+        errorElement.classList.remove('hidden');
+        //errorElement.querySelector('span').innerText = err;
+        console.error(err);
+    }
+}
+
+function setUpCustomerLevel(num) {
+    // takes the input number of levels and adds that many levels to the dropdown
+
+    const container = document.getElementById('levelDropdown');
+
+    for (let i = 1; i <= num; i++) {
+        let newElem = document.createElement('div');
+        newElem.classList.add('option');
+        newElem.innerText = i;
+        newElem.setAttribute('data-level', i);
+        container.appendChild(newElem);
+    }
+}
+
+function openLevelDropdown(e) {
+    // open the customer level dropdown when clicked
+
+    e.stopPropagation();
+
+    const dropdown = document.getElementById('levelDropdown');
+    const chevron = document.querySelector('#levelButton .chevron');
+
+    dropdown.classList.toggle('show');
+    chevron.classList.toggle('open');
+
+    document.addEventListener('click', (e) => {
+        // check to see if the target is outside of the dropdown
+
+        dropdown.classList.remove('show');
+        chevron.classList.remove('open');
+        const level = e.target.getAttribute('data-level');
+
+        // if a level button was clicked, change the status
+        if (dropdown.contains(e.target) && level != null) {
+            changeCustomerLevel(level, e);
+        }
+
+    }, { once: true });
+
+}
+
+function changeCustomerLevel(level, e) {
+    // changes the customer level
+
+    const levelBtn = document.getElementById('levelButton');
+    const textElem = levelBtn.querySelector('span');
+    const newLevel = level;
+
+    textElem.innerText = level;
+
+    // see if the default customer level matches the button, and change its color if not
+    const defaultCustomerLevel = document.getElementById('customerLevel').getAttribute('data-level');
+    if (defaultCustomerLevel != newLevel) {
+        levelBtn.classList.add('alert');
+    } else {
+        levelBtn.classList.remove('alert');
+    }
+
+    const tableRows = document.querySelectorAll("#tableContainer > table > tbody > tr");
+    for (let parentRow of tableRows) {
+        let unitPriceCell = getNamedColumn(parentRow, 'unitPrice');
+        let partNum = getNamedColumn(parentRow, 'partNum').value;
+        if (!partNum) {
+            continue;
+        }
+        // lookup the part number and update the price for the specified level
+        let num, desc, price, bought;
+        const part = partsList.find(row => row['partNumber'] === partNum);
+        if (!part) {
+            console.log("Undefined part number: " + partNum);
+            price = 0;
+        } else {
+            price = part['level' + document.querySelector('#levelButton > span').innerText];
+        }
+        unitPriceCell.setValue(Number(price).toFixed(2));
+    }
+
+}
+
+function changeTaxExemptStatus(e) {
+    // changes the farm / tax exempt status
+
+    const inputElem = document.getElementById('farmCheckbox');
+
+    // if there was no event that triggered this function, toggle the checkbox
+    if (!e) {
+        inputElem.checked = !inputElem.checked;
+    }
+
+    // change the alert status if the default customer tax exempt is different than the checkbox
+    if (inputElem.checked != customerInfo.tax_exempt) {
+        inputElem.parentNode.classList.add('alert');
+    } else {
+        inputElem.parentNode.classList.remove('alert');
+    }
+
+    // update the tax for every row of the table
+    const tableRows = document.querySelectorAll("#tableContainer > table > tbody > tr");
+    for (let parentRow of tableRows) {
+        const sold = getNamedColumn(parentRow, 'unitPrice').value;
+        const bought = getNamedColumn(parentRow, 'bought').value;
+        const quantity = getNamedColumn(parentRow, 'quantity').value;
+        if (!sold && !bought && !quantity) {
+            continue;
+        }
+        // update tax cell by causing click event on PP cell
+        const ppCell = getNamedColumn(parentRow, 'pp');
+        ppCell.setValue(ppCell.checked);
+    }
+
+}
+
+function getWorkOrderJSON() {
+    // gather all the data from the work order to send to the server
+
+    let woJSON = {};
+
+    // add the basic work order details first
+    woJSON.wo = workOrderId;
+    woJSON.customer_id = customerInfo.customer_id;
+    woJSON.status = woStatus;
+    woJSON.date_created = dateCreated;
+    woJSON.last_modified = lastModified;
+    woJSON.description = document.querySelector("#description").value;
+    woJSON.notes = document.querySelector("#notes").value;
+
+    // get the parts next
+    let partsList = [];
+    let headers = document.querySelectorAll("#tableContainer > table > thead > tr > th");
+    let rows = document.querySelectorAll("#tableContainer > table > tbody > tr");
+    for (let row of rows) {
+        let rowDict = {};
+        let empty = true;
+        let cols = row.querySelectorAll("td");
+        for (let i = 0; i < headers.length; i++) {
+            let headerName = headers[i].getAttribute('name');
+            let colInput = cols[i].querySelector('input');
+            if (colInput.type == "checkbox") {
+                rowDict[headerName] = colInput.checked;
+            } else {
+                rowDict[headerName] = colInput.value;
+                if (colInput.value) {
+                    empty = false;
+                }
+            }
+        }
+        if (!empty) {
+            partsList.push(rowDict);
+        }
+
+    }
+    console.log(partsList)
+    let partsDict = {};
+    partsDict.farm_tax_exempt = document.querySelector("#farmCheckbox").checked;
+    partsDict.customer_level = Number(document.querySelector('#levelButton > span').innerText);
+    partsDict.parts_list = partsList;
+    woJSON.parts_and_prices = partsDict;
+
+    // add the additional charges
+    let additionalChargesDict = {};
+    let inputs = document.querySelectorAll("#additionalCharges input");
+    for (let input of inputs) {
+        if (input.type == "checkbox") {
+            additionalChargesDict[input.id] = input.checked;
+        } else {
+            additionalChargesDict[input.id] = input.value;
+        }
+    }
+    woJSON.additional_charges = additionalChargesDict;
+
+    // get the totals
+    woJSON.totals = totals;
+
+    // get the payment history
+    woJSON.payment_history = paymentHistory;
+
+    return woJSON;
 }
 
 function addEventListeners() {
@@ -751,6 +1049,12 @@ function addEventListeners() {
     // monitor for when the status button is clicked
     document.getElementById('status').addEventListener('click', (e) => openStatusDropdown(e));
 
+    // monitor for when the customer level button is clicked
+    document.getElementById('levelButton').addEventListener('click', (e) => openLevelDropdown(e));
+
+    // monitor for when the farmCheckbox is changed
+    document.getElementById('farmCheckbox').addEventListener('change', (e) => changeTaxExemptStatus(e));
+
     // detect when the user presses command + s
     document.addEventListener('keydown', (e) => {
         if (e.key == "s" && e.metaKey) {
@@ -759,6 +1063,16 @@ function addEventListeners() {
         }
     });
 
+    // listen for when the tableButtonsContainer buttons are clicked
+    const upperTableButtons = document.querySelectorAll('#tableButtonsContainer div.button:has(input)');
+    for (const element of upperTableButtons) {
+        element.addEventListener('click', e => {
+            let elem = element.querySelector('input');
+            if (elem != e.target) {
+                elem.click();
+            }
+        });
+    }
 }
 
 async function getAllParts() {
@@ -798,26 +1112,31 @@ async function main() {
             window.location = "../";
         }
 
+        // calculate totals right away to initialize the totals for saving to server
+        calculateTotals();
+
         displayWorkOrderData(workOrderData);
 
         // add the event listeners
         addEventListeners();
 
-        // if workOrderData does not have any parts already, add a new row
-        if (!workOrderData.woInfo['Parts & Prices']) {
-            addRowToTable();
-        }
-
         toggleTableView();
 
+        // for (let i = 0; i < 0; i++) {
+        //     addRowToTable();
+        // }
+
         // get a list of all the parts
-        getAllParts();
+        await getAllParts();
 
-        for (let i = 0; i < 0; i++) {
-            addRowToTable();
-        }
+        // find out how many levels there are
+        var maxLevel = Math.max(
+            ...Object.keys(partsList[0])
+                .filter(key => key.startsWith("level"))
+                .map(key => Number(key.replace("level", "")))
+        );
+        setUpCustomerLevel(maxLevel);
 
-        displayPaymentCard();
 
 
     } else {
